@@ -11,7 +11,7 @@ Informations de l'appareil à compléter au premier test :
 
 | Réf. | Test | Résultat attendu | Résultat | Date | Remarques |
 |---|---|---|---|---|---|
-| T1-01 | Compilation de l'environnement `tab5` | Aucune erreur | Échoué (v0.1.0) | 2026-11-16 | Erreur d'installation de la plateforme pioarduino (`FileNotFoundError` dans `postinstall`, Windows). Correctif en v0.1.1 : à retester |
+| T1-01 | Compilation de l'environnement `tab5` | Aucune erreur | Échoué (v0.1.0, v0.1.1) | 2026-11-16 | v0.1.0 : `FileNotFoundError` dans `postinstall` (Windows). v0.1.1 : plateforme « stable » 55.3.312 refusée, PlatformIO Core 6.2.0-post.1 jugé trop ancien (>=6.2.0 requis). Correctif en v0.1.2 : à retester |
 | T1-02 | Téléversement | Terminé sans erreur | Non testé | | |
 | T1-03 | Affichage au démarrage | Titre et version visibles | Non testé | | |
 | T1-04 | Tactile | Les coordonnées changent quand on touche | Non testé | | |
