@@ -8,6 +8,13 @@
 4. Brancher le Tab5 avec un câble USB de données, puis téléverser.
 5. Ouvrir le moniteur série (115200) pour lire les messages.
 
+## Si l'installation de la plateforme échoue
+
+- Mettre à jour PlatformIO (VS Code : extension PlatformIO, ou `python -m pip install -U platformio`).
+- Activer les chemins longs de Windows, puis redémarrer.
+- Vérifier que Python et git sont installés et accessibles depuis un terminal.
+- Relancer, et en cas d'échec noter le message complet dans `docs/TESTS.md`.
+
 ## Si le Tab5 n'est pas reconnu
 
 - Utiliser un vrai câble de données, fermer tout autre moniteur série.

@@ -6,6 +6,11 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
+## [0.1.1] - 2026-11-16
+
+### Corrigé
+- Échec de l'installation de la plateforme au premier lancement (erreur `FileNotFoundError` pendant l'étape `postinstall`, Windows). La plateforme pioarduino est désormais installée depuis l'archive publiée « stable » au lieu d'un dépôt git épinglé. Correctif à valider (voir `docs/TESTS.md`, T1-01).
+
 ## [0.1.0] - 2026-11-16
 
 Premier squelette du projet, **non testé sur l'appareil**.

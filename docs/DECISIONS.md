@@ -12,3 +12,4 @@ Chaque décision structurante est notée ici avec sa date et sa raison, pour ne 
 | D-006 | 2026-11-16 | Caméra traitée en dernier | Décodage H.264 incertain sur le P4, risque technique le plus élevé | Actée |
 | D-007 | 2026-11-16 | H3C : prise en charge conditionnée à la confirmation du modèle et de sa compatibilité mode LAN | Modèle non confirmé | Ouverte |
 | D-008 | 2026-11-16 | Versions gérées par git (tags `vX.Y.Z`) et CHANGELOG, pas par dossiers copiés | Historique fiable, retour en arrière possible | Actée |
+| D-009 | 2026-11-16 | Plateforme pioarduino installée depuis l'archive « stable », à figer sur une version précise dès que le build est validé | L'installation depuis un tag git a échoué sous Windows (T1-01) ; figer la version garantit des builds reproductibles | Provisoire |
