@@ -6,6 +6,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
+### Corrigé
+- `src/config.h` (WiFi) était suivi par git depuis le commit « première compilation », alors qu'il doit rester local. Il n'est plus suivi ; le fichier local est conservé et le modèle reste `src/config.example.h`. Aucun mot de passe réel n'avait été commité (vérifié sur tout l'historique).
+
 ### Validé
 - Compilation de l'environnement `tab5` réussie avec la plateforme 54.03.21-2 (T1-01). Téléversement et tests sur l'appareil (T1-02 à T1-07) : en attente.
 
