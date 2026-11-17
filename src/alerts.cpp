@@ -1,4 +1,5 @@
 #include "alerts.h"
+#include "ui_common.h"
 #include <M5Unified.h>
 #include <Preferences.h>
 #include <lvgl.h>
@@ -94,10 +95,15 @@ void alerts_tick() {
       seen[i] = false;
       continue;
     }
-    if (seen[i] && g_on) {
-      if (prev_state[i] == "RUNNING" && s.gcode == "FINISH") alerts_play(Sound::Finish);
-      else if ((s.gcode == "FAILED" && prev_state[i] != "FAILED") || (s.error != 0 && prev_error[i] == 0))
-        alerts_play(Sound::Error);
+    if (seen[i]) {
+      // L'écran se rallume à chaque événement, même si les sons sont désactivés.
+      if (prev_state[i] == "RUNNING" && s.gcode == "FINISH") {
+        display_wake();
+        if (g_on) alerts_play(Sound::Finish);
+      } else if ((s.gcode == "FAILED" && prev_state[i] != "FAILED") || (s.error != 0 && prev_error[i] == 0)) {
+        display_wake();
+        if (g_on) alerts_play(Sound::Error);
+      }
     }
     prev_state[i] = s.gcode;
     prev_error[i] = s.error;

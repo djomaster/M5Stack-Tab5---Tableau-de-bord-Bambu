@@ -62,6 +62,12 @@ static void wake() {
 }
 static void ev_cover(lv_event_t *) { wake(); }
 
+// Rallume l'écran (ou repart pour toute la durée choisie s'il est déjà allumé) : fin d'impression, erreur.
+void display_wake() {
+  wake();
+  lv_display_trigger_activity(nullptr);
+}
+
 // Appelé chaque seconde : éteint l'écran après l'inactivité choisie. Le premier toucher le rallume sans actionner ce qui se trouve dessous.
 static void dim_tick(lv_timer_t *) {
   uint32_t idle = lv_display_get_inactive_time(nullptr);

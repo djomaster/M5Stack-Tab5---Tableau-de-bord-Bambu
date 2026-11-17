@@ -77,6 +77,7 @@ void inventory_open();
 extern lv_obj_t *scr_display;
 void ui_display_build();
 void display_screen_open();
+void display_wake();  // rallume l'écran éteint (alertes)
 
 // Libellés d'état partagés
 const char *link_text(int link, const char *gcode, bool got_report, int error);

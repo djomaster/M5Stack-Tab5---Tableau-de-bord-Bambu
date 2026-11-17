@@ -110,3 +110,4 @@ Informations de l'appareil à compléter au premier test :
 | A-04 | Persistance | Après redémarrage (bouton Redémarrer), les deux réglages sont conservés | OK | |
 | A-05 | Extinction | Avec « après 1 min » : après une minute sans toucher, l'écran s'éteint ; le premier toucher le rallume à la luminosité choisie sans actionner de bouton | À refaire | v1 : atténuation, remplacée par l'extinction (demande utilisateur) |
 | A-06 | Extinction et impression | L'écran éteint continue de se mettre à jour (pas de gel) | OK | |
+| A-07 | Réveil par alerte | Écran éteint (extinction réglée) : à la fin d'une impression ou à l'apparition d'une erreur, l'écran se rallume tout seul | À faire | Alternative sans impression : voir la procédure dans PROCEDURES.md si disponible |
