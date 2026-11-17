@@ -122,6 +122,6 @@ Prérequis : « LAN Mode Liveview » activé sur l'imprimante testée.
 | C-02 | H2C | Même test sur la H2C | OK | Flux lu : High 4.1, CABAC, 30 images/s, ≈1680x1080 (largeur à vérifier), 160 Ko/s, 0 perte. Verdict : incompatible avec esp_h264 |
 | C-03 | Reprise MQTT | Après la sonde (« Fin de la sonde »), les deux imprimantes repassent « en ligne » sans redémarrage | OK | Les deux imprimantes se reconnectent ; une tentative échoue (rc=-4, 9 s) juste après la sonde |
 | C-04 | Mémoire | Le journal série affiche « Memoire interne apres » proche de la valeur d'avant | OK | Bloc interne max identique avant et après (212 980 octets) |
-| C-06 | Décodeur sur la tablette | Appui sur « Caméra » : la sonde affiche « Décodeur maison » avec 3 temps en ms, la résolution et la PSRAM libre ; noter les temps X1C et H2C | À faire | |
+| C-06 | Décodeur sur la tablette | Appui sur « Caméra » : la sonde affiche « Décodeur maison » avec 3 temps en ms, la résolution et la PSRAM libre ; noter les temps X1C et H2C | OK (2026-11-17) | H2C 1680x1080 : 1018 / 958 / 962 ms. X1C 1760x1080 : 736 / 752 / 828 ms et 769 / 736 / 800 ms. 3 images sur 3 décodées, PSRAM libre 26 Mo, mémoire interne inchangée (bloc max 241652 avant et après), pas de plantage |
 | C-07 | Décodeur sur PC | `python3 tools/h264i_check.py` (ffmpeg, g++, numpy requis) : 9 flux, tous identiques à ffmpeg | OK (2026-11-17, machine de développement) | |
 | C-05 | Mauvais état | LAN Mode Liveview désactivé : message d'échec clair, pas de plantage | À faire | |
