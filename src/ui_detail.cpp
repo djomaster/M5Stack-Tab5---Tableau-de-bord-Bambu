@@ -47,21 +47,21 @@ static void tray_card(lv_obj_t *parent, const Tray &T, bool active, int x, int y
     lv_obj_set_style_border_color(sw, col(C_LINE2), 0);
     lv_obj_set_pos(sw, 12, 10);
     lv_obj_set_pos(mk_label(c, T.type.c_str(), FB16, C_TEXT), 56, 14);
+    // Une seule valeur en bas de carte : le poids de l'inventaire Tiger s'il est connu, sinon le pourcentage de l'imprimante.
     // Pas de pourcentage pour une bobine externe, ni quand l'imprimante ne le connaît pas (bobine sans puce).
-    if (show_pct && T.remain >= 0) {
-      String r = String(T.remain) + " %";
-      lv_obj_set_pos(mk_label(c, r.c_str(), F16, C_MUTED), 12, 52);
-    }
+    bool shown = false;
     if (show_pct) {
       bool approx;
       int g = inventory_grams(T, approx);
       if (g >= 0) {
         String gs = String(approx ? "env. " : "") + String(g) + " g";
-        lv_obj_t *gl = mk_label(c, gs.c_str(), F16, approx ? C_MUTED : C_ACC_T);
-        lv_obj_set_width(gl, 100);
-        lv_obj_set_style_text_align(gl, LV_TEXT_ALIGN_RIGHT, 0);
-        lv_obj_set_pos(gl, 38, 52);
+        lv_obj_set_pos(mk_label(c, gs.c_str(), F16, approx ? C_MUTED : C_ACC_T), 12, 52);
+        shown = true;
       }
+    }
+    if (!shown && show_pct && T.remain >= 0) {
+      String r = String(T.remain) + " %";
+      lv_obj_set_pos(mk_label(c, r.c_str(), F16, C_MUTED), 12, 52);
     }
   } else {
     lv_obj_set_pos(mk_label(c, "Vide", F16, C_MUTED), 12, 28);
@@ -128,7 +128,7 @@ static void detail_tick(lv_timer_t *) {
     lv_label_set_text(d_bed, "");
   }
   // Les bobines ne sont redessinées que si elles ont changé.
-  String sig = String(tiger_revision()) + "/" + String(s.tray_now) + ":";
+  String sig = String(tiger_data_revision()) + "/" + String(s.tray_now) + ":";
   for (int u = 0; u < 4; u++) sig += String(s.unit_id[u]) + (s.unit_ht[u] ? "H" : "N");
   for (int i = 0; i < MAX_TRAYS; i++)
     sig += String(s.trays[i].present) + s.trays[i].tag + s.trays[i].type + String(s.trays[i].color, HEX) + String(s.trays[i].remain) + ";";

@@ -7,6 +7,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ## [Non publié]
 
 ### Modifié
+- Inventaire : filtre par matière en pastilles cliquables (« Toutes » + une par matière), à la place du bouton cyclique.
+- Inventaire : synchronisation automatique toutes les 30 s tant que l'écran Inventaire est affiché, 5 min sinon ; la liste n'est redessinée que si le contenu change.
+- Détail imprimante : une seule valeur par bobine (poids Tiger, « env. » si approximatif ; sinon le pourcentage de l'imprimante).
 - Poids de l'inventaire estimés par couleur : préfixe « env. » au lieu de « ~ » (le tilde ressemblait à un signe moins).
 - Diagnostic : cause du dernier redémarrage au démarrage, mémoire après chaque étape d'initialisation, et ligne « Mem CHUTE » avec les dernières étapes quand la mémoire interne chute de plus de 12 Ko en 200 ms.
 - Clavier : bouton « Réduire » (en bas à droite) qui masque le clavier ; toucher de nouveau un champ de saisie le ré-affiche.

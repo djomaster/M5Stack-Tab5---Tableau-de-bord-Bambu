@@ -131,7 +131,7 @@ struct Row {
   Spool s;
   String brand, material;
 };
-static lv_obj_t *i_list, *i_summary, *i_filter_label, *i_empty;
+static lv_obj_t *i_list, *i_summary, *i_chips, *i_empty;
 static std::vector<String> i_materials;  // matières présentes, pour le filtre
 static int i_filter = -1;                // -1 = toutes
 static int i_shown_rev = -1;
@@ -140,9 +140,8 @@ static const int LOW_G = 100;  // seuil de stock bas, en grammes
 
 static void ev_open_tiger(lv_event_t *) { tiger_screen_open(); }
 
-static void ev_filter(lv_event_t *) {
-  i_filter++;
-  if (i_filter >= (int)i_materials.size()) i_filter = -1;
+static void ev_chip(lv_event_t *e) {
+  i_filter = (int)(intptr_t)lv_event_get_user_data(e);
   i_shown_filter = -2;  // force le redessin au prochain passage
 }
 static void ev_inv_sync(lv_event_t *) {
@@ -219,7 +218,20 @@ static void rebuild_inventory() {
   char buf[120];
   snprintf(buf, sizeof(buf), "%d bobines   |   %.1f kg de filament", shown, total_g / 1000.0);
   lv_label_set_text(i_summary, buf);
-  lv_label_set_text(i_filter_label, flt.length() ? ("Matière : " + flt).c_str() : "Matière : toutes");
+  // pastilles de matière (défilement horizontal)
+  lv_obj_clean(i_chips);
+  {
+    int cx = 0;
+    for (int k = -1; k < (int)i_materials.size(); k++) {
+      String nm = k < 0 ? String("Toutes") : i_materials[k];
+      int w = 40 + (int)nm.length() * 13;
+      if (w < 100) w = 100;
+      bool on = (k == i_filter);
+      lv_obj_t *b = mk_button(i_chips, nm.c_str(), w, 44, on ? C_ACC : C_CARD2, on ? C_BG : C_TEXT, F18, ev_chip, (void *)(intptr_t)k);
+      lv_obj_set_pos(b, cx, 0);
+      cx += w + 10;
+    }
+  }
   if (rows.empty()) {
     lv_label_set_text(i_empty, tiger_signed_in() ? "Aucune bobine dans l'inventaire." : "Compte Tiger Studio non connecté.");
     lv_obj_remove_flag(i_empty, LV_OBJ_FLAG_HIDDEN);
@@ -230,8 +242,9 @@ static void rebuild_inventory() {
 
 static void inv_tick(lv_timer_t *) {
   if (lv_screen_active() != scr_inventory) return;
-  if (tiger_revision() != i_shown_rev || i_filter != i_shown_filter) {
-    i_shown_rev = tiger_revision();
+  tiger_set_fast(lv_screen_active() == scr_inventory);
+  if (tiger_data_revision() != i_shown_rev || i_filter != i_shown_filter) {
+    i_shown_rev = tiger_data_revision();
     i_shown_filter = i_filter;
     rebuild_inventory();
   }
@@ -248,16 +261,19 @@ static void build_inventory() {
   scr_inventory = p.scr;
   i_summary = mk_label(p.body, "", F18, C_MUTED);
   lv_obj_set_pos(i_summary, 24, 18);
-  lv_obj_t *fb = mk_button(p.body, "Matière : toutes", 300, 44, C_CARD2, C_TEXT, F18, ev_filter);
-  lv_obj_set_pos(fb, 620, 8);
-  i_filter_label = lv_obj_get_child(fb, 0);
+  i_chips = lv_obj_create(p.body);
+  plain(i_chips, C_BG);
+  lv_obj_set_size(i_chips, 1240, 52);
+  lv_obj_set_pos(i_chips, 20, 56);
+  lv_obj_add_flag(i_chips, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_scroll_dir(i_chips, LV_DIR_HOR);
   lv_obj_set_pos(mk_button(p.body, "Synchroniser", 170, 44, C_CARD2, C_TEXT, F18, ev_inv_sync), 934, 8);
   lv_obj_set_pos(mk_button(p.body, "Compte", 130, 44, C_CARD2, C_TEXT, F18, ev_open_tiger), 1114, 8);
 
   i_list = lv_obj_create(p.body);
   plain(i_list, C_BG);
-  lv_obj_set_size(i_list, 1240, 500);
-  lv_obj_set_pos(i_list, 20, 62);
+  lv_obj_set_size(i_list, 1240, 450);
+  lv_obj_set_pos(i_list, 20, 112);
   lv_obj_add_flag(i_list, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_set_scroll_dir(i_list, LV_DIR_VER);
 

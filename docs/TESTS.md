@@ -79,17 +79,17 @@ Informations de l'appareil à compléter au premier test :
 
 | N° | Test | Résultat attendu | Statut | Notes |
 |---|---|---|---|---|
-| T5-01 | Compilation | « SUCCESS » | À faire | |
-| T5-02 | Barre de navigation | Trois onglets : Accueil, Inventaire, Réglages ; chacun ouvre le bon écran | À faire | |
-| T5-03 | Clavier : symboles | « Symb. » donne !@#$ et autres ; retour avec un second appui | À faire | |
-| T5-04 | Mauvais mot de passe | Message « E-mail ou mot de passe incorrect » | À faire | |
-| T5-05 | Connexion | « Connecté » et nombre de bobines affiché | À faire | Noter l'éventuel message d'erreur (série : lignes « Tiger ») |
-| T5-06 | Inventaire | Les bobines s'affichent avec couleur, marque, matière, poids | À faire | Comparer avec Tiger Studio |
-| T5-07 | Noms de marques et matières | Noms lisibles, pas « Marque 123 » | À faire | |
-| T5-08 | Filtre et total | Le filtre par matière change la liste et le total | À faire | |
-| T5-09 | Bobine presque vide | Poids en orange sous 100 g | À faire | |
-| T5-10 | Persistance | Après redémarrage, l'inventaire revient sans ressaisir le mot de passe | À faire | |
-| T5-11 | Lien AMS : puce RFID | Une bobine Bambu enregistrée affiche son poids (sans « ~ ») dans le détail | À faire | |
-| T5-12 | Lien AMS : couleur/matière | Une bobine sans puce reconnue affiche un poids précédé de « ~ » | À faire | |
-| T5-13 | Déconnexion | « Se déconnecter » vide l'inventaire et retire le compte | À faire | |
-| T5-14 | Fluidité | Pas de gel de l'écran pendant la synchronisation ni le défilement de la liste | À faire | |
+| T5-01 | Compilation | « SUCCESS » | OK | |
+| T5-02 | Barre de navigation | Trois onglets : Accueil, Inventaire, Réglages ; chacun ouvre le bon écran | OK | |
+| T5-03 | Clavier : symboles | « Symb. » donne !@#$ et autres ; retour avec un second appui | OK | |
+| T5-04 | Mauvais mot de passe | Message « E-mail ou mot de passe incorrect » | OK | |
+| T5-05 | Connexion | « Connecté » et nombre de bobines affiché | OK | Noter l'éventuel message d'erreur (série : lignes « Tiger ») |
+| T5-06 | Inventaire | Les bobines s'affichent avec couleur, marque, matière, poids | OK | Comparer avec Tiger Studio |
+| T5-07 | Noms de marques et matières | Noms lisibles, pas « Marque 123 » | OK | |
+| T5-08 | Filtre et total | Les pastilles de matière filtrent la liste et le total | À refaire | v1 : bouton cyclique jugé peu pratique → pastilles |
+| T5-09 | Bobine presque vide | Poids en orange sous 100 g | OK | |
+| T5-10 | Persistance | Après redémarrage, l'inventaire revient sans ressaisir le mot de passe | OK | Demande : inventaire gardé en mémoire, actualisé auto (30 s écran ouvert, sinon 5 min) |
+| T5-11 | Lien AMS : puce RFID | Une bobine Bambu enregistrée affiche son poids (sans « ~ ») dans le détail | À refaire | Poids + % jugé confus → une seule valeur (poids Tiger, sinon %) |
+| T5-12 | Lien AMS : couleur/matière | Une bobine sans puce reconnue affiche un poids précédé de « ~ » | OK | présumé OK |
+| T5-13 | Déconnexion | « Se déconnecter » vide l'inventaire et retire le compte | À faire | Non rapporté |
+| T5-14 | Fluidité | Pas de gel de l'écran pendant la synchronisation ni le défilement de la liste | OK | fluidité correcte |

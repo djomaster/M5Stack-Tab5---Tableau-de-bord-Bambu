@@ -22,7 +22,11 @@ static const char *FB_PROJECT = "tigertag-connect";
 static const char *URL_BRANDS = "https://raw.githubusercontent.com/TigerTag-Project/TigerTag-Studio-Manager/main/assets/db/tigertag/id_brand.json";
 static const char *URL_MATERIALS = "https://raw.githubusercontent.com/TigerTag-Project/TigerTag-Studio-Manager/main/assets/db/tigertag/id_material.json";
 
-static const uint32_t SYNC_PERIOD_MS = 30UL * 60UL * 1000UL;
+static const uint32_t SYNC_PERIOD_MS = 5UL * 60UL * 1000UL;   // période normale
+static const uint32_t SYNC_FAST_MS = 30UL * 1000UL;           // pendant que l'inventaire est affiché
+static volatile bool g_fast = false;
+static int g_data_rev = 0;
+static uint32_t g_data_hash = 0;
 static const uint32_t RETRY_PERIOD_MS = 60UL * 1000UL;
 static const size_t MAX_SPOOLS = 400;
 
@@ -351,9 +355,19 @@ static bool do_sync() {
     page_token = out["nextPageToken"] | "";
     if (page_token.isEmpty()) break;
   }
+  uint32_t h = 2166136261u;
+  for (auto &sp : list) {
+    String k = sp.uid + "|" + sp.tag + "|" + sp.twin + "|" + String(sp.brand) + "|" + String(sp.material) + "|" + sp.color_name + "|" +
+               String(sp.weight) + "|" + String(sp.capacity) + "|" + String(sp.color, HEX) + ";";
+    for (size_t i = 0; i < k.length(); i++) h = (h ^ (uint8_t)k[i]) * 16777619u;
+  }
   {
     Lock lk;
     g_spools.swap(list);
+    if (h != g_data_hash || g_data_rev == 0) {
+      g_data_hash = h;
+      g_data_rev++;
+    }
   }
   g_last_sync = millis();
   Serial.printf("Tiger : %u bobines synchronisees\n", (unsigned)g_spools.size());
@@ -388,6 +402,7 @@ static void tiger_task(void *) {
       {
         Lock lk;
         g_spools.clear();
+        g_data_rev++;
       }
       set_state(TigerState::SignedOut);
     }
@@ -409,7 +424,7 @@ static void tiger_task(void *) {
     }
     if (online && g_refresh.length() && g_state != TigerState::SigningIn) {
       uint32_t now = millis();
-      bool due = g_last_sync == 0 ? now >= g_next_try : (now - g_last_sync > SYNC_PERIOD_MS);
+      bool due = g_last_sync == 0 ? now >= g_next_try : (now - g_last_sync > (g_fast ? SYNC_FAST_MS : SYNC_PERIOD_MS));
       if (g_req_sync || (due && now >= g_next_try)) {
         g_req_sync = false;
         bool ok;
@@ -471,6 +486,8 @@ String tiger_message() {
   return g_message;
 }
 int tiger_revision() { return g_rev; }
+int tiger_data_revision() { return g_data_rev; }
+void tiger_set_fast(bool fast) { g_fast = fast; }
 int tiger_count() {
   Lock lk;
   return (int)g_spools.size();

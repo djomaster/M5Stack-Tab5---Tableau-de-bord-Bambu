@@ -25,6 +25,8 @@ void tiger_logout();
 void tiger_sync_now();
 TigerState tiger_state();
 String tiger_message();  // dernier message d'erreur, lisible
+int tiger_data_revision();  // augmente seulement quand le contenu de l'inventaire change
+void tiger_set_fast(bool fast);  // true : synchronisation toutes les 30 s (inventaire affiché)
 int tiger_revision();    // augmente à chaque synchronisation réussie ou changement d'état
 int tiger_count();
 bool tiger_get(int i, Spool &out);
