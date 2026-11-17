@@ -193,6 +193,13 @@ static bool g_fu_open = false;
 static uint32_t g_pics = 0, g_dec_errs = 0, g_pic_ms[MAX_PICS];
 static int64_t g_pic_us = 0;
 static const char *g_dec_err = "";
+// file d'attente du mode image en direct (voir view_offer)
+static uint8_t *g_job_buf = nullptr;
+static size_t g_job_len = 0;
+static uint8_t g_job_sps[256], g_job_pps[256], g_cur_sps[256], g_cur_pps[256];
+static size_t g_job_sps_len = 0, g_job_pps_len = 0, g_cur_sps_len = 0, g_cur_pps_len = 0;
+static volatile int g_job_state = 0;  // 0 : decodeur libre, 1 : une image attend ou est en cours de decodage
+static volatile bool g_dec_quit = false, g_dec_done = true;
 
 static void *psram_alloc(size_t n) { return heap_caps_malloc(n, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT); }
 static void psram_free(void *p) { heap_caps_free(p); }
@@ -207,6 +214,9 @@ struct DecGuard {
     g_dec_err = "";
     g_nal_cap = 400 * 1024;
     g_nal = (uint8_t *)psram_alloc(g_nal_cap);
+    g_job_buf = (uint8_t *)psram_alloc(g_nal_cap);
+    g_job_state = 0;
+    g_cur_sps_len = g_cur_pps_len = 0;
     g_dec = new H264Intra(psram_alloc, psram_free);
   }
   ~DecGuard() {
@@ -214,6 +224,8 @@ struct DecGuard {
     g_dec = nullptr;
     psram_free(g_nal);
     g_nal = nullptr;
+    psram_free(g_job_buf);
+    g_job_buf = nullptr;
   }
 };
 
@@ -255,21 +267,66 @@ static void view_publish() {
 }
 
 // Une unite NAL complete (sans code de debut) : SPS, PPS et tranches IDR vont au decodeur, les 3 premieres images sont chronometrees.
+// Mode image en direct : le decodage (~1 s) ne doit pas bloquer la lecture du flux, sinon l'imprimante finit par ne plus rien envoyer.
+// Le lecteur ne fait que copier une image cle (avec le dernier SPS/PPS) dans g_job_buf ; une tache separee la decode.
+
+static void view_offer(const uint8_t *nal, size_t len, int t) {
+  if (t == 7 && len <= sizeof(g_cur_sps)) {
+    memcpy(g_cur_sps, nal, len);
+    g_cur_sps_len = len;
+  } else if (t == 8 && len <= sizeof(g_cur_pps)) {
+    memcpy(g_cur_pps, nal, len);
+    g_cur_pps_len = len;
+  } else if (t == 5) {
+    Bits b{nal + 1, len - 1 > 16 ? 16 : len - 1};
+    if (b.ue() != 0) return;  // les flux Bambu n'ont qu'une tranche par image
+    if (g_job_state != 0 || !g_job_buf || len > g_nal_cap || !g_cur_sps_len || !g_cur_pps_len) return;
+    // delai mesure entre les arrivees des images cles retenues
+    if (millis() - g_last_pic_ms < VIEW_PERIOD_MS - VIEW_TOLERANCE_MS) return;
+    memcpy(g_job_buf, nal, len);
+    g_job_len = len;
+    memcpy(g_job_sps, g_cur_sps, g_cur_sps_len);
+    g_job_sps_len = g_cur_sps_len;
+    memcpy(g_job_pps, g_cur_pps, g_cur_pps_len);
+    g_job_pps_len = g_cur_pps_len;
+    g_last_pic_ms = millis();
+    g_job_state = 1;
+  }
+}
+
+static void dec_task(void *) {
+  while (!g_dec_quit) {
+    if (g_job_state != 1) {
+      vTaskDelay(pdMS_TO_TICKS(20));
+      continue;
+    }
+    int64_t t0 = esp_timer_get_time();
+    g_dec->feed(g_job_sps, g_job_sps_len);
+    g_dec->feed(g_job_pps, g_job_pps_len);
+    int r = g_dec->feed(g_job_buf, g_job_len);
+    if (r < 0) {
+      g_dec_errs++;
+      g_dec_err = g_dec->last_error();
+    } else if (g_dec->picture_ready()) {
+      view_publish();
+      g_vms = (uint32_t)((esp_timer_get_time() - t0) / 1000);
+    }
+    g_job_state = 0;
+  }
+  g_dec_done = true;
+  vTaskDelete(nullptr);
+}
+
+// Une unite NAL complete (sans code de debut) : en mode sonde, SPS, PPS et tranches IDR vont au decodeur, les 3 premieres images sont chronometrees.
 static void nal_complete(const uint8_t *nal, size_t len) {
   if (!g_dec || len < 2) return;
   int t = nal[0] & 0x1F;
   if (t != 5 && t != 7 && t != 8) return;
-  if (!g_view && g_pics >= MAX_PICS) return;
-  if (g_view && t == 5) {
-    // En mode image en direct, une image cle sur deux seulement est decodee (periode VIEW_PERIOD_MS).
-    Bits b{nal + 1, len - 1 > 16 ? 16 : len - 1};
-    if (b.ue() == 0) {
-      // le delai se mesure entre les DEBUTS de decodage : le decodage dure ~0,8 a 1 s
-      g_want = (millis() - g_last_pic_ms) >= VIEW_PERIOD_MS - VIEW_TOLERANCE_MS;
-      if (g_want) g_last_pic_ms = millis();
-    }
-    if (!g_want) return;
+  if (g_view) {
+    view_offer(nal, len, t);
+    return;
   }
+  if (g_pics >= MAX_PICS) return;
   int64_t t0 = esp_timer_get_time();
   int r = g_dec->feed(nal, len);
   int64_t dt = esp_timer_get_time() - t0;
@@ -281,15 +338,8 @@ static void nal_complete(const uint8_t *nal, size_t len) {
   if (t == 5) {
     g_pic_us += dt;
     if (g_dec->picture_ready()) {
-      uint32_t ms = (uint32_t)(g_pic_us / 1000);
+      g_pic_ms[g_pics++] = (uint32_t)(g_pic_us / 1000);
       g_pic_us = 0;
-      if (g_view) {
-        view_publish();
-        g_vms = ms;
-        g_want = false;
-      } else {
-        g_pic_ms[g_pics++] = ms;
-      }
     }
   }
 }
@@ -551,6 +601,13 @@ static void feed_nal_b64(const String &b64, bool is_sps) {
   if (is_sps) parse_sps(out, ol);
   else parse_pps(out, ol);
   if (g_dec) g_dec->feed(out, ol);
+  if (is_sps) {
+    memcpy(g_cur_sps, out, ol);
+    g_cur_sps_len = ol;
+  } else {
+    memcpy(g_cur_pps, out, ol);
+    g_cur_pps_len = ol;
+  }
 }
 
 static void run_probe(const PrinterCfg &cfg) {
@@ -674,12 +731,32 @@ static void run_probe(const PrinterCfg &cfg) {
   uint32_t t_start = millis(), t_rx = t_start;
   g_last_pic_ms = t_start - VIEW_PERIOD_MS;
   g_want = false;
-  if (g_view) rep("En direct : une image toutes les %u ms", (unsigned)VIEW_PERIOD_MS);
+  if (g_view) {
+    rep("En direct : une image par seconde au mieux");
+    g_dec_quit = false;
+    g_dec_done = false;
+    g_job_state = 0;
+    if (xTaskCreatePinnedToCore(dec_task, "cam_dec", 20480, nullptr, 0, nullptr, 1) != pdPASS) {
+      g_dec_done = true;
+      heap_caps_free(buf);
+      rep("ECHEC : tache de decodage impossible a creer");
+      return;
+    }
+  }
+  uint32_t t_ka = t_start;
   while (g_view ? !g_stop : (millis() - t_start < PLAY_MS)) {
+    if (g_view && millis() - t_ka > 5000) {
+      // message de maintien de session (OPTIONS) ; la reponse, du texte sans '$', est ignoree par la boucle de lecture
+      t_ka = millis();
+      g_cseq++;
+      c.print(String("OPTIONS ") + base + " RTSP/1.0\r\nCSeq: " + g_cseq + "\r\nUser-Agent: BambuDashboard\r\n" + auth_for("OPTIONS", base) +
+              "Session: " + sess + "\r\n\r\n");
+    }
     if (c.available() <= 0) {
       if (!c.connected()) break;
       if (g_view && millis() - t_rx > 10000) {
-        rep("Flux interrompu : plus de donnees depuis 10 s");
+        rep("Flux interrompu : plus de donnees depuis 10 s (apres %u s, %u paquets, connexion %s)", (unsigned)((millis() - t_start) / 1000),
+            (unsigned)st_pkts, c.connected() ? "ouverte" : "fermee");
         break;
       }
       vTaskDelay(pdMS_TO_TICKS(2));
@@ -703,6 +780,10 @@ static void run_probe(const PrinterCfg &cfg) {
     if (h[0] == 0) handle_rtp(buf, len);
   }
   float secs = (millis() - t_start) / 1000.0f;
+  if (g_view) {
+    g_dec_quit = true;
+    while (!g_dec_done) vTaskDelay(pdMS_TO_TICKS(20));
+  }
   heap_caps_free(buf);
   rtsp(c, "TEARDOWN", base, "Session: " + sess + "\r\n", r);
   c.stop();
@@ -815,7 +896,7 @@ static void start_task(const PrinterCfg &cfg) {
   g_last_line = "Demarrage...";
   xSemaphoreGive(g_mx);
   g_running = true;
-  xTaskCreatePinnedToCore(probe_task, "cam_probe", 20480, new PrinterCfg(cfg), 0, nullptr, 0);
+  xTaskCreatePinnedToCore(probe_task, "cam_probe", 20480, new PrinterCfg(cfg), g_view ? 1 : 0, nullptr, 0);
 }
 
 void camera_probe_start(const PrinterCfg &cfg) {

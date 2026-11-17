@@ -124,7 +124,7 @@ Prérequis : « LAN Mode Liveview » activé sur l'imprimante testée.
 | C-04 | Mémoire | Le journal série affiche « Memoire interne apres » proche de la valeur d'avant | OK | Bloc interne max identique avant et après (212 980 octets) |
 | C-06 | Décodeur sur la tablette | Appui sur « Caméra » : la sonde affiche « Décodeur maison » avec 3 temps en ms, la résolution et la PSRAM libre ; noter les temps X1C et H2C | OK (2026-11-17) | H2C 1680x1080 : 1018 / 958 / 962 ms. X1C 1760x1080 : 736 / 752 / 828 ms et 769 / 736 / 800 ms. 3 images sur 3 décodées, PSRAM libre 26 Mo, mémoire interne inchangée (bloc max 241652 avant et après), pas de plantage |
 | C-07 | Décodeur sur PC | `python3 tools/h264i_check.py` (ffmpeg, g++, numpy requis) : 9 flux, tous identiques à ffmpeg | OK (2026-11-17, machine de développement) | |
-| C-08 | Image en direct X1C | Détail de la X1C > Caméra : une image apparaît en moins de 10 s, renouvelée toutes les 2 s environ, couleurs plausibles, « Fermer » ramène à l'écran sans plantage | À faire | |
+| C-08 | Image en direct X1C | Détail de la X1C > Caméra : une image apparaît en moins de 10 s, renouvelée toutes les 1 à 2 s, couleurs plausibles, le flux dure plus de 2 minutes sans « plus de données », « Fermer » ramène à l'écran sans plantage | Échec le 2026-11-17 : flux arrêté après ≈ 12 s (3 essais) ; correction : décodage dans une tâche séparée | À refaire |
 | C-09 | Image en direct H2C | Même test sur la H2C | À faire | |
 | C-10 | Ouvrir / fermer 5 fois de suite | Pas de plantage, mémoire interne stable (lignes « Mem »), MQTT se reconnecte après chaque fermeture | À faire | |
 | C-05 | Mauvais état | LAN Mode Liveview désactivé : message d'échec clair, pas de plantage | À faire | |
