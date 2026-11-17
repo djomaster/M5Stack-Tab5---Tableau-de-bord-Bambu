@@ -6,24 +6,8 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
-### Modifié
-- Inventaire : la couleur des bobines TigerData (puce Tiger sans `online_color_list`) est lue dans `color_r/g/b`, et le nom de couleur dans `message` (corrige les deux CC3D HIPS affichées en noir). Le diagnostic « document brut » est retiré.
-- WiFi : SSID et adresse IP mis en cache à la connexion au lieu d'être relus chaque seconde (le WiFi du P4 passe par un coprocesseur ; piste pour les redémarrages watchdog).
-- Diagnostic couleur : pour une bobine HIPS sans `online_color_list` (les deux CC3D s'affichent en noir), le document Tiger brut est affiché une fois sur la console afin de trouver le champ qui porte la vraie couleur.
-- Inventaire : trois filtres (Marque, Matière, Couleur) à choisir dans une liste avec le nombre de bobines ; ils se combinent, bouton « Réinitialiser ». La couleur est classée par famille (Noir, Blanc, Gris, Rouge, Orange, Marron, Jaune, Vert, Cyan, Bleu, Violet, Rose) d'après le code RVB.
-- Réglages : bouton « Redémarrer la tablette » (confirmation en deux appuis).
-- Diagnostic : la valeur brute de la couleur des bobines HIPS est affichée sur la console à chaque synchronisation.
-- Inventaire : sauvegardé en mémoire flash (LittleFS, `/tiger.tsv`) avec les noms de marques et de matières ; il réapparaît dès le démarrage, avant la première synchronisation.
-- Diagnostic : les 16 dernières étapes sont conservées en mémoire RTC et affichées au démarrage suivant un plantage (« Avant le redemarrage, dernieres etapes : … »).
-- Inventaire : filtre par matière en pastilles cliquables (« Toutes » + une par matière), à la place du bouton cyclique.
-- Inventaire : synchronisation automatique toutes les 30 s tant que l'écran Inventaire est affiché, 5 min sinon ; la liste n'est redessinée que si le contenu change.
-- Détail imprimante : une seule valeur par bobine (poids Tiger, « env. » si approximatif ; sinon le pourcentage de l'imprimante).
-- Poids de l'inventaire estimés par couleur : préfixe « env. » au lieu de « ~ » (le tilde ressemblait à un signe moins).
-- Diagnostic : cause du dernier redémarrage au démarrage, mémoire après chaque étape d'initialisation, et ligne « Mem CHUTE » avec les dernières étapes quand la mémoire interne chute de plus de 12 Ko en 200 ms.
-- Clavier : bouton « Réduire » (en bas à droite) qui masque le clavier ; toucher de nouveau un champ de saisie le ré-affiche.
-- Clavier tactile pleine largeur en bas de l'écran (touches 110 x 68 px au lieu de 66 x 60). WiFi : deux modes (liste des réseaux, puis mot de passe avec clavier). Assistant imprimante et Tiger Studio : champs en haut, clavier en bas.
-- Tiger Studio : le second identifiant RFID se lit dans le champ `twin_uid` (nom confirmé par la documentation d'intégration de TigerTag ; la clé Firebase, le projet et le chemin de l'inventaire étaient déjà conformes).
-- Tiger Studio : en cas d'échec réseau, la console série détaille la cause (WiFi, DNS, TLS, mémoire).
+### Ajouté
+- Réglages > Affichage : luminosité de l'écran (10 à 100 %) et atténuation automatique après 1, 5 ou 15 minutes d'inactivité ; un toucher rallume l'écran. Réglages conservés après redémarrage.
 
 ## [0.5.0] - 2026-11-17 (validée sur l'appareil, sauf T5-13 « Se déconnecter » à tester)
 
@@ -35,6 +19,21 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - Barre de navigation à trois onglets : Accueil, Inventaire, Réglages.
 
 ### Modifié
+- Inventaire : la couleur des bobines TigerData (puce Tiger sans `online_color_list`) est lue dans `color_r/g/b`, et le nom de couleur dans `message` (corrige les deux CC3D HIPS affichées en noir). Le diagnostic « document brut » est retiré.
+- WiFi : SSID et adresse IP mis en cache à la connexion au lieu d'être relus chaque seconde (le WiFi du P4 passe par un coprocesseur ; piste pour les redémarrages watchdog).
+- Inventaire : trois filtres (Marque, Matière, Couleur) à choisir dans une liste avec le nombre de bobines ; ils se combinent, bouton « Réinitialiser ». La couleur est classée par famille (Noir, Blanc, Gris, Rouge, Orange, Marron, Jaune, Vert, Cyan, Bleu, Violet, Rose) d'après le code RVB.
+- Réglages : bouton « Redémarrer la tablette » (confirmation en deux appuis).
+- Inventaire : sauvegardé en mémoire flash (LittleFS, `/tiger.tsv`) avec les noms de marques et de matières ; il réapparaît dès le démarrage, avant la première synchronisation.
+- Diagnostic : les 16 dernières étapes sont conservées en mémoire RTC et affichées au démarrage suivant un plantage (« Avant le redemarrage, dernieres etapes : … »).
+- Inventaire : filtre par matière en pastilles cliquables (« Toutes » + une par matière), à la place du bouton cyclique.
+- Inventaire : synchronisation automatique toutes les 30 s tant que l'écran Inventaire est affiché, 5 min sinon ; la liste n'est redessinée que si le contenu change.
+- Détail imprimante : une seule valeur par bobine (poids Tiger, « env. » si approximatif ; sinon le pourcentage de l'imprimante).
+- Poids de l'inventaire estimés par couleur : préfixe « env. » au lieu de « ~ » (le tilde ressemblait à un signe moins).
+- Diagnostic : cause du dernier redémarrage au démarrage, mémoire après chaque étape d'initialisation, et ligne « Mem CHUTE » avec les dernières étapes quand la mémoire interne chute de plus de 12 Ko en 200 ms.
+- Clavier : bouton « Réduire » (en bas à droite) qui masque le clavier ; toucher de nouveau un champ de saisie le ré-affiche.
+- Clavier tactile pleine largeur en bas de l'écran (touches 110 x 68 px au lieu de 66 x 60). WiFi : deux modes (liste des réseaux, puis mot de passe avec clavier). Assistant imprimante et Tiger Studio : champs en haut, clavier en bas.
+- Tiger Studio : le second identifiant RFID se lit dans le champ `twin_uid` (nom confirmé par la documentation d'intégration de TigerTag ; la clé Firebase, le projet et le chemin de l'inventaire étaient déjà conformes).
+- Tiger Studio : en cas d'échec réseau, la console série détaille la cause (WiFi, DNS, TLS, mémoire).
 - Menu Réglages : sept entrées plus compactes (ajout de Tiger Studio).
 - Un seul clavier tactile, déplacé d'un écran à l'autre, au lieu d'un par écran.
 - La tâche réseau Tiger Studio n'est créée que si un compte est connecté.

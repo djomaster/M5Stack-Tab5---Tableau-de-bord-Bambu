@@ -16,6 +16,7 @@ static void ev_go_about(lv_event_t *) { go(scr_about); }
 static void ev_go_printers(lv_event_t *) { printers_screen_open(); }
 static void ev_go_wizard(lv_event_t *) { wizard_open(); }
 static void ev_go_alerts(lv_event_t *) { alerts_screen_open(); }
+static void ev_go_display(lv_event_t *) { display_screen_open(); }
 static void ev_go_tiger(lv_event_t *) { tiger_screen_open(); }
 static void ev_tile(lv_event_t *e) { detail_open((int)(intptr_t)lv_event_get_user_data(e)); }
 static void ev_go_wifi(lv_event_t *);
@@ -157,7 +158,7 @@ static void build_settings() {
     lv_event_cb_t cb;
   };
   Item items[] = {
-      {"WiFi", ev_go_wifi}, {"Imprimantes", ev_go_printers}, {"Tiger Studio", ev_go_tiger}, {"Alertes", ev_go_alerts}, {"Affichage", ev_soon}, {"À propos", ev_go_about},
+      {"WiFi", ev_go_wifi}, {"Imprimantes", ev_go_printers}, {"Tiger Studio", ev_go_tiger}, {"Alertes", ev_go_alerts}, {"Affichage", ev_go_display}, {"À propos", ev_go_about},
   };
   int y = 24;
   for (auto &it : items) {
@@ -394,6 +395,7 @@ void ui_init() {
   ui_printers_build();
   ui_detail_build();
   ui_tiger_build();
+  ui_display_build();
   lv_timer_create(status_tick, 1000, nullptr);
   status_tick(nullptr);
 

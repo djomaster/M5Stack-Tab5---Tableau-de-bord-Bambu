@@ -73,6 +73,11 @@ void ui_tiger_build();
 void tiger_screen_open();
 void inventory_open();
 
+// Réglages > Affichage (ui_display.cpp)
+extern lv_obj_t *scr_display;
+void ui_display_build();
+void display_screen_open();
+
 // Libellés d'état partagés
 const char *link_text(int link, const char *gcode, bool got_report, int error);
 String fmt_remaining(int minutes);
