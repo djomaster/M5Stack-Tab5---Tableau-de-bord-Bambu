@@ -24,6 +24,16 @@
 
 À faire sur l'écran de chaque imprimante (menu réseau) : activer le mode LAN, noter l'adresse IP, le code d'accès et le numéro de série (dans les infos de l'appareil). Pour la caméra de la X1C, activer aussi l'affichage en direct en mode LAN. Les intitulés exacts varient avec la version du firmware : se référer à la documentation Bambu Lab de la version installée.
 
+## Compilation automatique sur GitHub (GitHub Actions)
+
+Le fichier `.github/workflows/build.yml` compile le firmware sur GitHub, sans rien installer.
+
+- **À chaque envoi sur `main`** : onglet **Actions** du dépôt, une coche verte signifie que le projet compile.
+- **Pour joindre le firmware à une version** : publier une **Release** (Releases > Draft a new release, choisir le tag, Publish). Au bout de quelques minutes (la première compilation est longue), les fichiers `bambu-dashboard-<tag>-complet.bin`, `-app.bin`, `-bootloader.bin` et `-partitions.bin` apparaissent dans la release.
+- **À la demande** : Actions > « Compilation du firmware » > Run workflow ; les fichiers se téléchargent en bas de la page de l'exécution (30 jours).
+- **Flasher le fichier `-complet.bin`** sans PlatformIO : un seul fichier, à écrire à l'adresse **0x0** (par exemple avec l'outil en ligne esptool-js d'Espressif, Tab5 branché en USB). Non testé à ce jour.
+- Si l'exécution est rouge : ouvrir l'exécution, copier les dernières lignes de l'étape en échec et les transmettre.
+
 ## Sauvegarde
 
 - Pousser régulièrement le dépôt git vers un dépôt distant privé.

@@ -1,0 +1,69 @@
+# Compilation automatique du firmware sur GitHub.
+# - à chaque envoi sur « main » et à chaque demande de fusion : vérifie que le projet compile ;
+# - à la publication d'une « Release » : compile la version du tag et joint les fichiers à la release ;
+# - à la demande (onglet Actions > Run workflow) : compile et garde les fichiers 30 jours.
+name: Compilation du firmware
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+
+      - name: Installer PlatformIO
+        run: pip install platformio
+
+      - name: Compiler
+        run: pio run -e tab5
+
+      - name: Rassembler les fichiers
+        run: |
+          set -e
+          NAME="${{ github.event.release.tag_name || github.sha }}"
+          NAME="${NAME:0:12}"
+          mkdir -p dist
+          B=.pio/build/tab5
+          cp "$B/firmware.bin"   "dist/bambu-dashboard-$NAME-app.bin"
+          cp "$B/bootloader.bin" "dist/bambu-dashboard-$NAME-bootloader.bin"
+          cp "$B/partitions.bin" "dist/bambu-dashboard-$NAME-partitions.bin"
+          if [ -f "$B/firmware-merged.bin" ]; then
+            cp "$B/firmware-merged.bin" "dist/bambu-dashboard-$NAME-complet.bin"
+          else
+            echo "::warning::firmware-merged.bin absent : seuls les fichiers séparés sont publiés"
+          fi
+          ls -la dist
+
+      - name: Conserver les fichiers
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: dist/*
+          retention-days: 30
+
+      - name: Joindre à la release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: dist/*

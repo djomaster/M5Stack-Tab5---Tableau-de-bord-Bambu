@@ -26,3 +26,4 @@ Chaque décision structurante est notée ici avec sa date et sa raison, pour ne 
 | D-020 | 2026-11-17 | Les 16 dernières étapes du programme sont gardées en mémoire RTC et affichées après un plantage | Diagnostiquer les redémarrages watchdog sans débogueur | Actée |
 | D-021 | 2026-11-17 | SSID et IP du WiFi lus une seule fois à la connexion | Le WiFi du P4 passe par un coprocesseur (SDIO) ; éviter les échanges inutiles chaque seconde | Actée, effet sur les watchdog à confirmer |
 | D-022 | 2026-11-17 | Caméra reportée à une date indéterminée | Demande de l'utilisateur | Actée |
+| D-023 | 2026-11-17 | Compilation et publication du firmware par GitHub Actions ; fichier unique fusionné à flasher à l'adresse 0x0 | Permet d'obtenir un firmware sans installer PlatformIO | À valider (première exécution) |

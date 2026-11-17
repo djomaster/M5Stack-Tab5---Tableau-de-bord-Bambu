@@ -6,6 +6,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
+### Ajouté
+- Compilation automatique sur GitHub (`.github/workflows/build.yml`, GitHub Actions) : vérification à chaque envoi sur `main`, firmware joint aux releases (fichier unique `-complet.bin` + fichiers séparés). Script `tools/merge_bin.py` qui assemble le fichier unique à chaque build (sans jamais faire échouer la compilation). Non testé : première exécution à vérifier sur GitHub.
+
 ## [0.5.1] - 2026-11-17 (validée sauf A-07, réveil par alerte, à tester avec une impression)
 
 ### Ajouté
