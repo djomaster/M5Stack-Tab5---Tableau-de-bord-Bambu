@@ -233,6 +233,18 @@ static void handle_rtp(const uint8_t *p, size_t len) {
 static String g_pass, g_realm, g_nonce;
 static bool g_digest = false, g_basic = false;
 static int g_cseq = 0;
+static uint32_t g_skipped = 0;
+
+// Trace une réponse RTSP sur une ligne (retours à la ligne remplacés, 150 caractères au plus).
+static void rep_hdr(const char *label, const String &h) {
+  String t;
+  for (size_t i = 0; i < h.length() && t.length() < 150; i++) {
+    char ch = h[i];
+    if (ch == '\r') continue;
+    t += (ch == '\n') ? '|' : ((ch >= 32 && ch < 127) ? ch : '?');
+  }
+  rep("%s : %s", label, t.c_str());
+}
 
 static String md5hex(const String &s) {
   uint8_t o[16];
@@ -337,7 +349,21 @@ static bool rtsp(WiFiClientSecure &c, const char *method, const String &uri, con
   uint32_t t0 = millis();
   while (!r.hdr.endsWith("\r\n\r\n")) {
     if (c.available() > 0) {
-      r.hdr += (char)c.read();
+      int ch = c.read();
+      if (r.hdr.length() == 0 && ch == '$') {  // trame RTP entrelacée arrivée avant la réponse : on la saute
+        uint8_t h[3];
+        if (!rd(c, h, 3, 2000)) return false;
+        size_t len = ((size_t)h[1] << 8) | h[2];
+        uint8_t tmp[64];
+        while (len > 0) {
+          size_t k = len < sizeof(tmp) ? len : sizeof(tmp);
+          if (!rd(c, tmp, k, 2000)) return false;
+          len -= k;
+        }
+        g_skipped++;
+        continue;
+      }
+      r.hdr += (char)ch;
       if (r.hdr.length() > 4096) return false;
     } else {
       if (!c.connected() || millis() - t0 > 7000) return false;
@@ -481,12 +507,22 @@ static void run_probe(const PrinterCfg &cfg) {
       sess.trim();
     }
   }
-  rep("SETUP : ok");
-  if (!rtsp(c, "PLAY", base, "Session: " + sess + "\r\nRange: npt=0.000-\r\n", r) || r.code != 200) {
+  rep_hdr("SETUP", r.hdr);
+  g_skipped = 0;
+  uint32_t t_play = millis();
+  bool play_ok = rtsp(c, "PLAY", base, "Session: " + sess + "\r\n", r);
+  rep("PLAY : %s, code %d, %u ms, connexion %s, %u trames sautees", play_ok ? "reponse lue" : "pas de reponse lisible", r.code,
+      (unsigned)(millis() - t_play), c.connected() ? "ouverte" : "fermee", (unsigned)g_skipped);
+  if (r.hdr.length()) rep_hdr("PLAY brut", r.hdr);
+  if (r.code != 0 && r.code != 200) {
     rep("ECHEC : PLAY refuse (code %d)", r.code);
     return;
   }
-  rep("PLAY : flux demarre, mesure sur %u s", (unsigned)(PLAY_MS / 1000));
+  if (!c.connected() && c.available() <= 0) {
+    rep("ECHEC : connexion fermee par l'imprimante apres PLAY");
+    return;
+  }
+  rep("Lecture du flux sur %u s", (unsigned)(PLAY_MS / 1000));
 
   uint8_t *buf = (uint8_t *)heap_caps_malloc(4096, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
   if (!buf) {
