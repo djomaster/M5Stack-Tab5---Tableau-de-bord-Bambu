@@ -310,6 +310,7 @@ static void build_wifi() {
   lv_textarea_set_placeholder_text(wifi_ta, "Mot de passe");
   lv_obj_set_size(wifi_ta, 600, 56);
   lv_obj_set_pos(wifi_ta, 24, 48);
+  lv_obj_add_event_cb(wifi_ta, [](lv_event_t *) { kb_show(); }, LV_EVENT_CLICKED, nullptr);
 
   wifi_show_btn = mk_button(p.body, "Afficher", 170, 56, C_CARD2, C_TEXT, F18, ev_show);
   lv_obj_set_pos(wifi_show_btn, 636, 48);

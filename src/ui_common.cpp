@@ -194,6 +194,8 @@ static void ev_clear(lv_event_t *) {
 
 static const int KEY_W = 110, KEY_H = 68, KEY_PX = 118, KEY_PY = 74, KB_X0 = 54;
 
+static void ev_close(lv_event_t *) { kb_hide(); }
+
 static void add_key_row(lv_obj_t *parent, const char *base, const char *sym, int x0, int y) {
   int x = x0;
   for (int i = 0; base[i]; i++) {
@@ -227,14 +229,17 @@ static void kb_fill(lv_obj_t *parent) {
   lv_obj_set_pos(sy, cx, r);
   sym_btns.push_back(sy);
   cx += 152;
-  lv_obj_t *sp = mk_button(parent, "Espace", 330, KEY_H, C_CARD2, C_TEXT, F20, ev_space);
+  lv_obj_t *sp = mk_button(parent, "Espace", 280, KEY_H, C_CARD2, C_TEXT, F20, ev_space);
   lv_obj_set_pos(sp, cx, r);
-  cx += 342;
+  cx += 292;
   lv_obj_t *dl = mk_button(parent, "Effacer", 160, KEY_H, C_LINE2, C_TEXT, F20, ev_del);
   lv_obj_set_pos(dl, cx, r);
   cx += 172;
   lv_obj_t *cl = mk_button(parent, "Vider", 120, KEY_H, C_LINE2, C_TEXT, F20, ev_clear);
   lv_obj_set_pos(cl, cx, r);
+  cx += 132;
+  lv_obj_t *fm = mk_button(parent, "Réduire", 110, KEY_H, C_ACC, C_ON_ACC, F18, ev_close);
+  lv_obj_set_pos(fm, cx, r);
 }
 
 // Un seul clavier existe (économie de mémoire) : il est créé au premier appel, puis simplement déplacé.
@@ -242,6 +247,12 @@ void kb_attach(lv_obj_t *parent, int x, int y) {
   if (!kb_box) return;
   lv_obj_set_parent(kb_box, parent);
   lv_obj_set_pos(kb_box, x, y);
+  lv_obj_remove_flag(kb_box, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_move_foreground(kb_box);
+}
+
+void kb_show() {
+  if (!kb_box) return;
   lv_obj_remove_flag(kb_box, LV_OBJ_FLAG_HIDDEN);
   lv_obj_move_foreground(kb_box);
 }

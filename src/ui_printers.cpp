@@ -101,6 +101,7 @@ static String ta_text(lv_obj_t *ta) {
 
 static void focus_field(lv_obj_t *ta) {
   kb_set_target(ta);
+  if (wz_cur > 0) kb_show();
   for (auto *f : wz_fields) lv_obj_set_style_border_color(f, col(f == ta ? C_ACC : C_LINE2), 0);
 }
 

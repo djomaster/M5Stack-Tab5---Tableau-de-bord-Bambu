@@ -55,7 +55,8 @@ void kb_build(lv_obj_t *parent, int x, int y);
 void kb_set_target(lv_obj_t *ta);
 static const int KB_Y = 200;  // le clavier occupe le bas de la page (pleine largeur) ; les champs restent au-dessus
 void kb_attach(lv_obj_t *parent, int x, int y);
-void kb_hide();  // déplace le clavier (unique) sur un autre écran
+void kb_hide();
+void kb_show();  // ré-affiche le clavier réduit (toucher un champ de saisie)  // déplace le clavier (unique) sur un autre écran
 
 // Écrans des imprimantes (ui_printers.cpp)
 void ui_printers_build();

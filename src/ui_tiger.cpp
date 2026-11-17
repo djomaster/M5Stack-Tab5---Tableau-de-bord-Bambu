@@ -15,6 +15,7 @@ static bool t_show_pw = false;
 
 static void focus_field(lv_obj_t *ta) {
   kb_set_target(ta);
+  kb_show();
   for (auto *f : t_fields) lv_obj_set_style_border_color(f, col(f == ta ? C_ACC : C_LINE2), 0);
 }
 static void ev_field(lv_event_t *e) { focus_field((lv_obj_t *)lv_event_get_target(e)); }

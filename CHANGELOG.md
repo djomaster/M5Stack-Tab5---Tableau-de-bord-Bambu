@@ -7,6 +7,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ## [Non publié]
 
 ### Modifié
+- Clavier : bouton « Réduire » (en bas à droite) qui masque le clavier ; toucher de nouveau un champ de saisie le ré-affiche.
 - Clavier tactile pleine largeur en bas de l'écran (touches 110 x 68 px au lieu de 66 x 60). WiFi : deux modes (liste des réseaux, puis mot de passe avec clavier). Assistant imprimante et Tiger Studio : champs en haut, clavier en bas.
 - Tiger Studio : le second identifiant RFID se lit dans le champ `twin_uid` (nom confirmé par la documentation d'intégration de TigerTag ; la clé Firebase, le projet et le chemin de l'inventaire étaient déjà conformes).
 - Tiger Studio : en cas d'échec réseau, la console série détaille la cause (WiFi, DNS, TLS, mémoire).
