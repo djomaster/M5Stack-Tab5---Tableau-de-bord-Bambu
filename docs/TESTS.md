@@ -86,10 +86,10 @@ Informations de l'appareil à compléter au premier test :
 | T5-05 | Connexion | « Connecté » et nombre de bobines affiché | OK | Noter l'éventuel message d'erreur (série : lignes « Tiger ») |
 | T5-06 | Inventaire | Les bobines s'affichent avec couleur, marque, matière, poids | OK | Comparer avec Tiger Studio |
 | T5-07 | Noms de marques et matières | Noms lisibles, pas « Marque 123 » | OK | |
-| T5-08 | Filtre et total | Les pastilles de matière filtrent la liste et le total | À refaire | v1 : bouton cyclique jugé peu pratique → pastilles |
+| T5-08 | Filtre et total | Les pastilles de matière filtrent la liste et le total | OK | Pastilles remplacées par 3 filtres Marque/Matière/Couleur |
 | T5-09 | Bobine presque vide | Poids en orange sous 100 g | OK | |
 | T5-10 | Persistance | Après redémarrage, l'inventaire revient sans ressaisir le mot de passe | OK | Cache flash : « Tiger : cache charge, 74 bobines » au démarrage (log) |
-| T5-11 | Lien AMS : puce RFID | Une bobine Bambu enregistrée affiche son poids (sans « ~ ») dans le détail | À refaire | Poids + % jugé confus → une seule valeur (poids Tiger, sinon %) |
+| T5-11 | Lien AMS : puce RFID | Une bobine Bambu enregistrée affiche son poids (sans « ~ ») dans le détail | OK | Une seule valeur par bobine |
 | T5-12 | Lien AMS : couleur/matière | Une bobine sans puce reconnue affiche un poids précédé de « ~ » | OK | présumé OK |
 | T5-13 | Déconnexion | « Se déconnecter » vide l'inventaire et retire le compte | À faire | Non rapporté |
 | T5-14 | Fluidité | Pas de gel de l'écran pendant la synchronisation ni le défilement de la liste | OK | fluidité correcte |

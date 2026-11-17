@@ -25,7 +25,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - Tiger Studio : le second identifiant RFID se lit dans le champ `twin_uid` (nom confirmé par la documentation d'intégration de TigerTag ; la clé Firebase, le projet et le chemin de l'inventaire étaient déjà conformes).
 - Tiger Studio : en cas d'échec réseau, la console série détaille la cause (WiFi, DNS, TLS, mémoire).
 
-## [0.5.0] - 2026-11-17 (à valider sur l'appareil, voir T5 dans `docs/TESTS.md`)
+## [0.5.0] - 2026-11-17 (validée sur l'appareil, sauf T5-13 « Se déconnecter » à tester)
 
 ### Ajouté
 - Compte Tiger Studio (Réglages > Tiger Studio) : connexion par e-mail et mot de passe. Le mot de passe n'est jamais conservé ; seul un jeton de renouvellement est gardé dans la mémoire de l'appareil (D-017).
