@@ -20,6 +20,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - Clavier : ajout de « Verr. Maj » (majuscules continues, utile pour le numéro de série) et « Vider ».
 - Nouvelles dépendances : PubSubClient 2.8, ArduinoJson 7.
 
+### Corrigé
+- Programme trop gros pour la table de partitions par défaut (1,4 Mo pour 1,25 Mo disponibles) : passage à la table `default_16MB.csv` (application jusqu'à 6,5 Mo). Le message « No such option: --ng » de esp-idf-size est un avertissement sans effet sur le firmware.
+
 ### Limites connues
 - La recherche automatique (SSDP) n'est pas validée sur le Tab5 ; la saisie manuelle sert de secours.
 - Les codes d'erreur sont affichés bruts (pas encore de traduction).
