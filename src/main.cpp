@@ -21,6 +21,9 @@ static void log_memory(const char *where) {
 }
 
 void setup() {
+  // Les allocations de plus de 512 octets (tampons TLS de 16 Ko, JSON, LVGL...) vont en PSRAM (31 Mo libres) ;
+  // la mémoire interne, rare (~70 Ko), reste pour le WiFi, les piles et les petits objets.
+  heap_caps_malloc_extmem_enable(512);
   auto cfg = M5.config();
   M5.begin(cfg);
   Serial.begin(115200);
