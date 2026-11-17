@@ -28,7 +28,7 @@ struct Page {
 };
 
 // Écrans (créés dans ui.cpp et ui_printers.cpp)
-extern lv_obj_t *scr_home, *scr_settings, *scr_wifi, *scr_about, *scr_printers, *scr_wizard, *scr_detail, *scr_alerts;
+extern lv_obj_t *scr_home, *scr_settings, *scr_wifi, *scr_about, *scr_printers, *scr_wizard, *scr_detail, *scr_alerts, *scr_tiger, *scr_inventory;
 
 lv_color_t col(uint32_t c);
 void plain(lv_obj_t *o, uint32_t bg);
@@ -42,7 +42,8 @@ void go(lv_obj_t *s);
 
 // Écran type : barre du haut (titre, état), zone centrale, barre de navigation.
 // back_cb : action du bouton « Retour » (nullptr = pas de bouton).
-Page make_page(const char *title, lv_event_cb_t back_cb, bool nav_home_active);
+enum { NAV_HOME = 0, NAV_INV = 1, NAV_SET = 2 };  // onglet actif de la barre de navigation
+Page make_page(const char *title, lv_event_cb_t back_cb, int nav_active);
 void ui_status_apply(const char *text);
 
 void ev_go_home(lv_event_t *e);
@@ -62,6 +63,11 @@ void wizard_open();
 void ui_detail_build();
 void detail_open(int printer_index);
 void alerts_screen_open();
+
+// Tiger Studio : compte et inventaire (ui_tiger.cpp)
+void ui_tiger_build();
+void tiger_screen_open();
+void inventory_open();
 
 // Libellés d'état partagés
 const char *link_text(int link, const char *gcode, bool got_report, int error);

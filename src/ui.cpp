@@ -15,6 +15,7 @@ static void ev_go_about(lv_event_t *) { go(scr_about); }
 static void ev_go_printers(lv_event_t *) { printers_screen_open(); }
 static void ev_go_wizard(lv_event_t *) { wizard_open(); }
 static void ev_go_alerts(lv_event_t *) { alerts_screen_open(); }
+static void ev_go_tiger(lv_event_t *) { tiger_screen_open(); }
 static void ev_tile(lv_event_t *e) { detail_open((int)(intptr_t)lv_event_get_user_data(e)); }
 static void ev_go_wifi(lv_event_t *);
 
@@ -123,36 +124,36 @@ static void home_update() {
 }
 
 static void build_home() {
-  home_page = make_page("Tableau de bord", nullptr, true);
+  home_page = make_page("Tableau de bord", nullptr, NAV_HOME);
   scr_home = home_page.scr;
   home_rebuild();
 }
 
 // ---------- Réglages ----------
 static void build_settings() {
-  Page p = make_page("Réglages", nullptr, false);
+  Page p = make_page("Réglages", nullptr, NAV_SET);
   scr_settings = p.scr;
   struct Item {
     const char *txt;
     lv_event_cb_t cb;
   };
   Item items[] = {
-      {"WiFi", ev_go_wifi}, {"Imprimantes", ev_go_printers}, {"Alertes", ev_go_alerts}, {"Affichage", ev_soon}, {"À propos", ev_go_about},
+      {"WiFi", ev_go_wifi}, {"Imprimantes", ev_go_printers}, {"Tiger Studio", ev_go_tiger}, {"Alertes", ev_go_alerts}, {"Affichage", ev_soon}, {"À propos", ev_go_about},
   };
   int y = 24;
   for (auto &it : items) {
-    lv_obj_t *b = mk_button(p.body, it.txt, 900, 80, C_CARD, C_TEXT, FB20, it.cb);
+    lv_obj_t *b = mk_button(p.body, it.txt, 900, 70, C_CARD, C_TEXT, FB20, it.cb);
     lv_obj_set_pos(b, 190, y);
     lv_obj_set_style_border_width(b, 2, 0);
     lv_obj_set_style_border_color(b, col(C_LINE), 0);
     lv_obj_align(lv_obj_get_child(b, 0), LV_ALIGN_LEFT_MID, 24, 0);
-    y += 96;
+    y += 86;
   }
 }
 
 // ---------- À propos ----------
 static void build_about() {
-  Page p = make_page("À propos", ev_go_settings, false);
+  Page p = make_page("À propos", ev_go_settings, NAV_SET);
   scr_about = p.scr;
   lv_obj_t *c = mk_card(p.body, 760, 300, C_LINE);
   lv_obj_set_pos(c, 260, 40);
@@ -244,7 +245,7 @@ static void ev_go_wifi(lv_event_t *) {
 }
 
 static void build_wifi() {
-  Page p = make_page("WiFi", ev_go_settings, false);
+  Page p = make_page("WiFi", ev_go_settings, NAV_SET);
   scr_wifi = p.scr;
 
   lv_obj_t *scan = mk_button(p.body, "Rechercher", 200, 48, C_CARD2, C_TEXT, F18, ev_scan);
@@ -328,6 +329,7 @@ void ui_init() {
   build_wifi();
   ui_printers_build();
   ui_detail_build();
+  ui_tiger_build();
   lv_timer_create(status_tick, 1000, nullptr);
   status_tick(nullptr);
 

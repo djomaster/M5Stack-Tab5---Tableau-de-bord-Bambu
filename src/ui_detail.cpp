@@ -4,6 +4,7 @@
 #include "bambu.h"
 #include "fonts.h"
 #include "printers.h"
+#include "tiger.h"
 #include "ui_common.h"
 
 // =====================================================================
@@ -14,6 +15,24 @@ static lv_obj_t *d_name, *d_status, *d_pct, *d_bar, *d_file, *d_layer, *d_remain
 static String d_ams_sig;
 
 static void ev_detail_back(lv_event_t *e) { ev_go_home(e); }
+
+// Poids restant d'après l'inventaire Tiger Studio : par puce RFID (sûr), sinon par couleur et matière (approximatif).
+static int inventory_grams(const Tray &T, bool &approx) {
+  approx = false;
+  if (!T.present || !tiger_signed_in()) return -1;
+  int i = -1;
+  bool zero = true;
+  for (size_t k = 0; k < T.tag.length(); k++)
+    if (T.tag[k] != '0') zero = false;
+  if (!zero) i = tiger_find_tag(T.tag);
+  if (i < 0) {
+    i = tiger_find_color(T.color, T.type);
+    approx = (i >= 0);
+  }
+  Spool sp;
+  if (i < 0 || !tiger_get(i, sp)) return -1;
+  return sp.weight;
+}
 
 static void tray_card(lv_obj_t *parent, const Tray &T, bool active, int x, int y, bool show_pct) {
   lv_obj_t *c = mk_card(parent, 150, 84, active ? C_ACC : C_LINE2);
@@ -31,6 +50,17 @@ static void tray_card(lv_obj_t *parent, const Tray &T, bool active, int x, int y
     if (show_pct && T.remain >= 0) {
       String r = String(T.remain) + " %";
       lv_obj_set_pos(mk_label(c, r.c_str(), F16, C_MUTED), 12, 52);
+    }
+    if (show_pct) {
+      bool approx;
+      int g = inventory_grams(T, approx);
+      if (g >= 0) {
+        String gs = String(approx ? "~" : "") + String(g) + " g";
+        lv_obj_t *gl = mk_label(c, gs.c_str(), F16, approx ? C_MUTED : C_ACC_T);
+        lv_obj_set_width(gl, 84);
+        lv_obj_set_style_text_align(gl, LV_TEXT_ALIGN_RIGHT, 0);
+        lv_obj_set_pos(gl, 50, 52);
+      }
     }
   } else {
     lv_obj_set_pos(mk_label(c, "Vide", F16, C_MUTED), 12, 28);
@@ -96,10 +126,10 @@ static void detail_tick(lv_timer_t *) {
     lv_label_set_text(d_bed, "");
   }
   // Les bobines ne sont redessinées que si elles ont changé.
-  String sig = String(s.tray_now) + ":";
+  String sig = String(tiger_revision()) + "/" + String(s.tray_now) + ":";
   for (int u = 0; u < 4; u++) sig += String(s.unit_id[u]) + (s.unit_ht[u] ? "H" : "N");
   for (int i = 0; i < MAX_TRAYS; i++)
-    sig += String(s.trays[i].present) + s.trays[i].type + String(s.trays[i].color, HEX) + String(s.trays[i].remain) + ";";
+    sig += String(s.trays[i].present) + s.trays[i].tag + s.trays[i].type + String(s.trays[i].color, HEX) + String(s.trays[i].remain) + ";";
   for (int k = 0; k < 2; k++)
     sig += String(s.ext[k].present) + s.ext[k].type + String(s.ext[k].color, HEX) + String(s.ext[k].remain) + ";";
   if (sig != d_ams_sig) {
@@ -157,7 +187,7 @@ void alerts_screen_open() {
 }
 
 static void build_alerts() {
-  Page p = make_page("Alertes", ev_go_settings, false);
+  Page p = make_page("Alertes", ev_go_settings, NAV_SET);
   scr_alerts = p.scr;
   lv_obj_t *c = mk_card(p.body, 760, 440, C_LINE);
   lv_obj_set_pos(c, 260, 40);
@@ -175,7 +205,7 @@ static void build_alerts() {
 
 // =====================================================================
 void ui_detail_build() {
-  Page p = make_page("Détail de l'imprimante", ev_detail_back, true);
+  Page p = make_page("Détail de l'imprimante", ev_detail_back, NAV_HOME);
   scr_detail = p.scr;
 
   lv_obj_t *left = mk_card(p.body, 540, 520, C_LINE2);

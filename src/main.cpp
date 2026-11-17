@@ -1,5 +1,5 @@
 // Tableau de bord Bambu Lab - M5Stack Tab5
-// Version 0.4.0 : vue détaillée, bobines de l'AMS, alertes sonores.
+// Version 0.5.0 : inventaire Tiger Studio et rapprochement avec les bobines de l'AMS.
 
 #include <M5Unified.h>
 #include <lvgl.h>
@@ -8,6 +8,7 @@
 #include "display_port.h"
 #include "fonts.h"
 #include "printers.h"
+#include "tiger.h"
 #include "ui.h"
 #include "version.h"
 #include "wifi_manager.h"
@@ -21,7 +22,8 @@ void setup() {
   printers_load();
   alerts_load();
   wifi_begin();
-  bambu_start();  // crée le verrou et la tâche réseau avant que l'interface ne les interroge
+  bambu_start();
+  tiger_begin();  // crée le verrou et la tâche réseau avant que l'interface ne les interroge
   display_port_init();
   fonts_init();
   ui_init();

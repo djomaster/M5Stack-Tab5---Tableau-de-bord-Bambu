@@ -6,6 +6,26 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
+## [0.5.0] - 2026-11-17 (à valider sur l'appareil, voir T5 dans `docs/TESTS.md`)
+
+### Ajouté
+- Compte Tiger Studio (Réglages > Tiger Studio) : connexion par e-mail et mot de passe. Le mot de passe n'est jamais conservé ; seul un jeton de renouvellement est gardé dans la mémoire de l'appareil (D-017).
+- Onglet Inventaire : liste des bobines (couleur, marque, matière, nom de la couleur, poids restant), tri par matière, filtre par matière, total en kilos, poids en orange sous 100 g, synchronisation automatique toutes les 10 minutes et bouton « Synchroniser ».
+- Rapprochement des bobines de l'AMS avec l'inventaire, dans la vue détaillée : par identifiant de puce RFID (poids sûr), sinon par couleur et matière (poids précédé de « ~ », approximatif). Pas de rapprochement pour la bobine externe.
+- Clavier : couche « Symb. » (symboles utiles aux mots de passe).
+- Barre de navigation à trois onglets : Accueil, Inventaire, Réglages.
+
+### Modifié
+- Menu Réglages : sept entrées plus compactes (ajout de Tiger Studio).
+
+### Limites connues
+- Tiger Studio n'a pas d'API publique : la lecture passe par la base Firebase de TigerTag, avec les droits de l'utilisateur. Ce fonctionnement n'est pas documenté officiellement et peut changer.
+- Connexion Google seule non prise en charge : un mot de passe TigerTag est nécessaire.
+- Les noms de marques et de matières sont téléchargés au premier accès depuis le dépôt GitHub de TigerTag ; sans eux, l'inventaire affiche « Marque n » / « Matière n ».
+- Les certificats TLS des serveurs ne sont pas vérifiés (comme pour les imprimantes).
+- Maximum 400 bobines affichées.
+- Code écrit sans compilation préalable.
+
 ## [0.4.0] - 2026-11-17
 
 Validée sur le Tab5 avec la H2C et la X1C : 9 tests sur 11 réussis (`docs/TESTS.md`). Livrée avec T4-09 (son de fin d'impression) et T4-10 (son d'erreur) non testés : ils exigent une vraie impression et une vraie erreur, à refaire à l'occasion.

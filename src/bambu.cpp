@@ -123,6 +123,7 @@ struct Conn {
               if (c.length() >= 6) T.color = strtoul(c.substring(0, 6).c_str(), nullptr, 16);
             }
             if (t["remain"].is<int>()) T.remain = t["remain"].as<int>();
+            if (t["tag_uid"].is<const char *>()) T.tag = t["tag_uid"].as<const char *>();
             T.present = T.type.length() > 0;
           }
           ui++;
@@ -226,6 +227,7 @@ void bambu_start() {
   f["ams"]["ams"][0]["tray"][0]["tray_type"] = true;
   f["ams"]["ams"][0]["tray"][0]["tray_color"] = true;
   f["ams"]["ams"][0]["tray"][0]["remain"] = true;
+  f["ams"]["ams"][0]["tray"][0]["tag_uid"] = true;
   g_reload = true;
   xTaskCreatePinnedToCore(net_task, "bambu_net", 28672, nullptr, 1, nullptr, 0);
 }

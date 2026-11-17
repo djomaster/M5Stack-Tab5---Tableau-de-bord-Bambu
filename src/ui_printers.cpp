@@ -296,7 +296,7 @@ static lv_obj_t *mk_step(lv_obj_t *body, int w) {
 }
 
 static void build_wizard() {
-  Page p = make_page("Ajouter une imprimante", ev_wz_back, false);
+  Page p = make_page("Ajouter une imprimante", ev_wz_back, NAV_SET);
   scr_wizard = p.scr;
   wz_head = mk_label(p.body, "", FB20, C_ACC_T);
   lv_obj_set_pos(wz_head, 24, 12);
@@ -350,7 +350,7 @@ static void build_wizard() {
 
 // =====================================================================
 void ui_printers_build() {
-  Page p = make_page("Imprimantes", ev_back_to_settings_from_list, false);
+  Page p = make_page("Imprimantes", ev_back_to_settings_from_list, NAV_SET);
   scr_printers = p.scr;
   list_body = p.body;
   lv_timer_create(list_tick, 1000, nullptr);

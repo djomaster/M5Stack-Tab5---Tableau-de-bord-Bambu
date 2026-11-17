@@ -2,7 +2,7 @@
 #include <vector>
 #include "fonts.h"
 
-lv_obj_t *scr_home, *scr_settings, *scr_wifi, *scr_about, *scr_printers, *scr_wizard, *scr_detail, *scr_alerts;
+lv_obj_t *scr_home, *scr_settings, *scr_wifi, *scr_about, *scr_printers, *scr_wizard, *scr_detail, *scr_alerts, *scr_tiger, *scr_inventory;
 static std::vector<lv_obj_t *> status_labels;
 
 lv_color_t col(uint32_t c) { return lv_color_hex(c); }
@@ -77,7 +77,9 @@ void go(lv_obj_t *s) { lv_screen_load(s); }
 void ev_go_home(lv_event_t *) { go(scr_home); }
 void ev_go_settings(lv_event_t *) { go(scr_settings); }
 
-Page make_page(const char *title, lv_event_cb_t back_cb, bool nav_home_active) {
+static void ev_go_inventory(lv_event_t *) { inventory_open(); }
+
+Page make_page(const char *title, lv_event_cb_t back_cb, int nav_active) {
   Page p;
   p.scr = lv_obj_create(nullptr);
   plain(p.scr, C_BG);
@@ -109,12 +111,16 @@ Page make_page(const char *title, lv_event_cb_t back_cb, bool nav_home_active) {
   plain(nav, C_NAV);
   lv_obj_set_size(nav, SCR_W, NAV_H);
   lv_obj_set_pos(nav, 0, 720 - NAV_H);
-  lv_obj_t *b1 = mk_button(nav, "Accueil", 300, 56, nav_home_active ? C_ACC : C_CARD2,
-                           nav_home_active ? C_ON_ACC : C_TEXT, FB20, ev_go_home);
-  lv_obj_set_pos(b1, 330, 12);
-  lv_obj_t *b2 = mk_button(nav, "Réglages", 300, 56, nav_home_active ? C_CARD2 : C_ACC,
-                           nav_home_active ? C_TEXT : C_ON_ACC, FB20, ev_go_settings);
-  lv_obj_set_pos(b2, 650, 12);
+  struct Tab {
+    const char *txt;
+    lv_event_cb_t cb;
+  };
+  Tab tabs[3] = {{"Accueil", ev_go_home}, {"Inventaire", ev_go_inventory}, {"Réglages", ev_go_settings}};
+  for (int i = 0; i < 3; i++) {
+    bool on = (i == nav_active);
+    lv_obj_t *b = mk_button(nav, tabs[i].txt, 260, 56, on ? C_ACC : C_CARD2, on ? C_ON_ACC : C_TEXT, FB20, tabs[i].cb);
+    lv_obj_set_pos(b, 220 + i * 290, 12);
+  }
   return p;
 }
 
@@ -123,31 +129,41 @@ void ui_status_apply(const char *text) {
 }
 
 // ---------- Clavier ----------
-static std::vector<lv_obj_t *> key_btns;
-static std::vector<lv_obj_t *> lock_btns;
+struct KeyInfo {
+  lv_obj_t *btn;
+  char base;  // caractère de la couche normale
+  char sym;   // caractère de la couche symboles
+};
+static std::vector<KeyInfo> keys;
+static std::vector<lv_obj_t *> lock_btns, sym_btns;
 static bool g_shift = false;
 static bool g_lock = false;
+static bool g_sym = false;
 static lv_obj_t *g_target = nullptr;
 
 static bool upper() { return g_shift || g_lock; }
 
+static char key_char(const KeyInfo &k) {
+  char c = g_sym ? k.sym : k.base;
+  if (upper() && c >= 'a' && c <= 'z') c -= 32;
+  return c;
+}
+
 static void refresh_keys() {
-  for (auto *b : key_btns) {
-    char c = (char)(uintptr_t)lv_obj_get_user_data(b);
-    if (upper() && c >= 'a' && c <= 'z') c -= 32;
-    char s[2] = {c, 0};
-    lv_label_set_text(lv_obj_get_child(b, 0), s);
+  for (auto &k : keys) {
+    char s[2] = {key_char(k), 0};
+    lv_label_set_text(lv_obj_get_child(k.btn, 0), s);
   }
   for (auto *b : lock_btns) lv_obj_set_style_bg_color(b, col(g_lock ? C_ACC : C_LINE2), 0);
+  for (auto *b : sym_btns) lv_obj_set_style_bg_color(b, col(g_sym ? C_ACC : C_LINE2), 0);
 }
 
 void kb_set_target(lv_obj_t *ta) { g_target = ta; }
 
 static void ev_key(lv_event_t *e) {
-  lv_obj_t *b = (lv_obj_t *)lv_event_get_target(e);
-  char c = (char)(uintptr_t)lv_obj_get_user_data(b);
-  if (upper() && c >= 'a' && c <= 'z') c -= 32;
-  if (g_target) lv_textarea_add_char(g_target, c);
+  size_t idx = (size_t)(uintptr_t)lv_event_get_user_data(e);
+  if (idx >= keys.size()) return;
+  if (g_target) lv_textarea_add_char(g_target, key_char(keys[idx]));
   if (g_shift) {
     g_shift = false;
     refresh_keys();
@@ -162,6 +178,10 @@ static void ev_lock(lv_event_t *) {
   g_shift = false;
   refresh_keys();
 }
+static void ev_sym(lv_event_t *) {
+  g_sym = !g_sym;
+  refresh_keys();
+}
 static void ev_space(lv_event_t *) {
   if (g_target) lv_textarea_add_char(g_target, ' ');
 }
@@ -172,34 +192,38 @@ static void ev_clear(lv_event_t *) {
   if (g_target) lv_textarea_set_text(g_target, "");
 }
 
-static void add_key_row(lv_obj_t *parent, const char *keys, int x0, int y) {
+static void add_key_row(lv_obj_t *parent, const char *base, const char *sym, int x0, int y) {
   int x = x0;
-  for (const char *k = keys; *k; k++) {
-    char s[2] = {*k, 0};
-    lv_obj_t *b = mk_button(parent, s, 66, 60, C_CARD2, C_TEXT, FB20, ev_key);
-    lv_obj_set_user_data(b, (void *)(uintptr_t)*k);
+  for (int i = 0; base[i]; i++) {
+    char s[2] = {base[i], 0};
+    size_t idx = keys.size();
+    lv_obj_t *b = mk_button(parent, s, 66, 60, C_CARD2, C_TEXT, FB20, ev_key, (void *)(uintptr_t)idx);
     lv_obj_set_pos(b, x, y);
-    key_btns.push_back(b);
+    keys.push_back({b, base[i], sym[i]});
     x += 72;
   }
 }
 
 void kb_build(lv_obj_t *parent, int x, int y) {
-  add_key_row(parent, "1234567890", x, y);
-  add_key_row(parent, "azertyuiop", x, y + 68);
-  add_key_row(parent, "qsdfghjklm", x, y + 136);
-  add_key_row(parent, "wxcvbn.-_@", x, y + 204);
-  lv_obj_t *sh = mk_button(parent, "Maj", 100, 60, C_LINE2, C_TEXT, F18, ev_shift);
-  lv_obj_set_pos(sh, x, y + 276);
-  lv_obj_t *lk = mk_button(parent, "Verr. Maj", 130, 60, C_LINE2, C_TEXT, F18, ev_lock);
-  lv_obj_set_pos(lk, x + 108, y + 276);
+  add_key_row(parent, "1234567890", "!@#$%^&*()", x, y);
+  add_key_row(parent, "azertyuiop", "-_=+[]{}\\|", x, y + 68);
+  add_key_row(parent, "qsdfghjklm", ";:'\",<>/?`", x, y + 136);
+  add_key_row(parent, "wxcvbn.-_@", "wxcvbn.-_@", x, y + 204);
+  int r = y + 276;
+  lv_obj_t *sh = mk_button(parent, "Maj", 90, 60, C_LINE2, C_TEXT, F18, ev_shift);
+  lv_obj_set_pos(sh, x, r);
+  lv_obj_t *lk = mk_button(parent, "Verr. Maj", 120, 60, C_LINE2, C_TEXT, F16, ev_lock);
+  lv_obj_set_pos(lk, x + 96, r);
   lock_btns.push_back(lk);
-  lv_obj_t *sp = mk_button(parent, "Espace", 190, 60, C_CARD2, C_TEXT, F18, ev_space);
-  lv_obj_set_pos(sp, x + 246, y + 276);
-  lv_obj_t *dl = mk_button(parent, "Effacer", 130, 60, C_LINE2, C_TEXT, F18, ev_del);
-  lv_obj_set_pos(dl, x + 444, y + 276);
-  lv_obj_t *cl = mk_button(parent, "Vider", 130, 60, C_LINE2, C_TEXT, F18, ev_clear);
-  lv_obj_set_pos(cl, x + 582, y + 276);
+  lv_obj_t *sy = mk_button(parent, "Symb.", 100, 60, C_LINE2, C_TEXT, F18, ev_sym);
+  lv_obj_set_pos(sy, x + 222, r);
+  sym_btns.push_back(sy);
+  lv_obj_t *sp = mk_button(parent, "Espace", 150, 60, C_CARD2, C_TEXT, F18, ev_space);
+  lv_obj_set_pos(sp, x + 328, r);
+  lv_obj_t *dl = mk_button(parent, "Effacer", 120, 60, C_LINE2, C_TEXT, F18, ev_del);
+  lv_obj_set_pos(dl, x + 484, r);
+  lv_obj_t *cl = mk_button(parent, "Vider", 100, 60, C_LINE2, C_TEXT, F18, ev_clear);
+  lv_obj_set_pos(cl, x + 610, r);
 }
 
 // ---------- Libellés ----------

@@ -9,6 +9,7 @@ struct Tray {
   bool present = false;
   uint32_t color = 0;  // RRGGBB
   String type;         // PLA, PETG...
+  String tag;          // identifiant de la puce RFID (bobines Bambu), vide ou 0000... si inconnu
   int remain = -1;     // pourcentage restant, -1 si inconnu
 };
 
