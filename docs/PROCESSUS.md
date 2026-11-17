@@ -35,3 +35,8 @@ Le code écrit mais non essayé sur l'appareil est marqué « À valider » dans
 ## OneDrive
 
 Le dossier du projet est dans OneDrive. Le dossier `.git` et le dossier `.pio` (fichiers de compilation, volumineux) peuvent ralentir la synchronisation ou la corrompre. Recommandation : exclure `.pio` de la synchronisation, ou déplacer le projet hors d'OneDrive et le sauvegarder via un dépôt distant privé.
+
+
+## README
+
+À chaque version (livrée ou en cours), mettre à jour dans `README.md` la ligne de version et le tableau des fonctions.
