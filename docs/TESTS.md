@@ -99,3 +99,14 @@ Informations de l'appareil à compléter au premier test :
 | N° | Test | Résultat attendu | Résultat | Remarque |
 |---|---|---|---|---|
 | L-01 | Marche continue, 2 imprimantes + Tiger Studio | Pas de redémarrage, mémoire stable | OK | 2026-11-17 : 3 h 17 min sans redémarrage, 38 synchronisations Tiger (toutes les 5 min). Mémoire interne libre : 281 Ko → 276 Ko (≈ -5 Ko en 3 h), creux de 220 Ko pendant les sessions TLS, plus grand bloc minimal 176 Ko. X1C éteinte puis reconnectée à l'allumage. |
+
+## Tests Affichage (0.5.1)
+
+| N° | Test | Résultat attendu | Résultat | Remarque |
+|---|---|---|---|---|
+| A-01 | Compilation | « SUCCESS » | À faire | |
+| A-02 | Réglages > Affichage | L'écran s'ouvre, affiche « Luminosité : 70 % » et « Atténuation : Jamais » | À faire | |
+| A-03 | Luminosité | « - » et « + » changent la luminosité de l'écran par pas de 10 %, entre 10 et 100 % | À faire | |
+| A-04 | Persistance | Après redémarrage (bouton Redémarrer), les deux réglages sont conservés | À faire | |
+| A-05 | Atténuation | Avec « après 1 min » : après une minute sans toucher, l'écran devient très sombre ; un toucher le rallume à la luminosité choisie | À faire | |
+| A-06 | Atténuation et impression | L'écran atténué continue de se mettre à jour (pas de gel) | À faire | |
