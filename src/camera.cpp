@@ -736,7 +736,8 @@ static void run_probe(const PrinterCfg &cfg) {
     g_dec_quit = false;
     g_dec_done = false;
     g_job_state = 0;
-    if (xTaskCreatePinnedToCore(dec_task, "cam_dec", 20480, nullptr, 0, nullptr, 1) != pdPASS) {
+    // cœur 0 (priorité 0, sous la lecture du flux) : sur le cœur 1, la boucle LVGL l'occupe presque tout le temps (décodage mesuré 2,7 s et 4,6 s)
+    if (xTaskCreatePinnedToCore(dec_task, "cam_dec", 20480, nullptr, 0, nullptr, 0) != pdPASS) {
       g_dec_done = true;
       heap_caps_free(buf);
       rep("ECHEC : tache de decodage impossible a creer");
