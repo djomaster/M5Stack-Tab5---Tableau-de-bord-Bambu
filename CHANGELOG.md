@@ -10,7 +10,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - `src/config.h` (WiFi) était suivi par git depuis le commit « première compilation », alors qu'il doit rester local. Il n'est plus suivi ; le fichier local est conservé et le modèle reste `src/config.example.h`. Aucun mot de passe réel n'avait été commité (vérifié sur tout l'historique).
 
 ### Validé
-- Étape 1 sur le Tab5 : téléversement, affichage de la version, tactile, batterie et PSRAM (T1-02 à T1-06). WiFi (T1-07) : non testé, WiFi non configuré.
+- Étape 1 sur le Tab5 : téléversement, affichage de la version, tactile, batterie et PSRAM (T1-02 à T1-06). WiFi (T1-07) : réussi, adresse IP obtenue. L'étape 1 est terminée.
 - Compilation de l'environnement `tab5` réussie avec la plateforme 54.03.21-2 (T1-01). Téléversement et tests sur l'appareil (T1-02 à T1-07) : en attente.
 
 ## [0.1.2] - 2026-11-16

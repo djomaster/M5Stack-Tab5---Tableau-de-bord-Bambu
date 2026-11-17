@@ -17,4 +17,4 @@ Informations de l'appareil à compléter au premier test :
 | T1-04 | Tactile | Les coordonnées changent quand on touche | Réussi (v0.1.2) | 2026-11-17 | |
 | T1-05 | Batterie | Niveau cohérent | Réussi (v0.1.2) | 2026-11-17 | 67 % affiché |
 | T1-06 | PSRAM | Environ 30 Mo libres affichés | Réussi (v0.1.2) | 2026-11-17 | 30 Mo affichés |
-| T1-07 | WiFi | Adresse IP affichée sous 30 s | Non testé | 2026-11-17 | WiFi non configuré dans `src/config.h` : à tester avant l'étape 2 |
+| T1-07 | WiFi | Adresse IP affichée sous 30 s | Réussi (v0.1.2) | 2026-11-17 | Adresse IP affichée : 192.168.4.186. Les broches SDIO vers l'ESP32-C6 sont validées |
