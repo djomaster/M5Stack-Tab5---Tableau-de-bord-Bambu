@@ -25,8 +25,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - La tâche réseau Tiger Studio n'est créée que si un compte est connecté.
 
 ### Corrigé
+- Allocation en PSRAM par défaut retirée : elle faisait échouer les accélérateurs matériels de chiffrement (`esp-sha`, `esp-aes : Failed to allocate`), qui exigent des tampons en mémoire interne, et empêchait même des connexions MQTT. Les piles réduites et le verrou TLS (ci-dessous) restent.
 - Mémoire interne (essai 2) : l'allocation en PSRAM ne concerne pas la bibliothèque TLS, qui exige de la mémoire interne. Piles des tâches réseau réduites à 16 Ko (gain d'environ 20 Ko) ; une seule connexion TLS à la fois (imprimantes et Tiger Studio se partagent un verrou) ; Tiger Studio attend qu'un bloc de 24 Ko soit libre.
-- Connexion Tiger Studio impossible (« Erreur réseau code -1 ») : la console montrait `SSL - Memory allocation failed` avec 40 Ko de mémoire interne libre sur 31 Mo de PSRAM. Les grosses allocations (plus de 512 octets) vont désormais en PSRAM, ce qui libère aussi la mémoire interne pour le WiFi (cause probable des redémarrages ci-dessous).
+- Connexion Tiger Studio impossible (« Erreur réseau code -1 ») : la console montrait `SSL - Memory allocation failed` avec 40 Ko de mémoire interne libre sur 31 Mo de PSRAM. (Essai 1, abandonné : voir ci-dessus.)
 - Redémarrages en boucle après la connexion des imprimantes (`assert failed: sdio_rx_get_buffer`, pilote WiFi du coprocesseur). Cause probable, non démontrée : manque de mémoire interne, la 0.5.0 ayant ajouté deux claviers (une centaine de boutons) et une tâche de 24 Ko. Réduction de ces deux postes ; la console série affiche maintenant la mémoire libre (« Mem ») au démarrage et toutes les 10 secondes pour confirmer.
 
 ### Limites connues
