@@ -2,7 +2,7 @@
 
 Tableau de bord multi-imprimantes (X1C, H2C, H3C envisagée) sur M5Stack Tab5 : suivi d'impression en direct, AMS, caméra, alertes sonores, inventaire de bobines Tiger Studio.
 
-**Dernière version : 0.5.0** (inventaire Tiger Studio, validée sur Tab5 avec X1C et H2C ; reste à tester : « Se déconnecter », T5-13). Voir `CHANGELOG.md`.
+**Dernière version : 0.5.1** (inventaire Tiger Studio, écran Affichage ; validée sur Tab5 avec X1C et H2C ; reste à tester : « Se déconnecter » T5-13 et le réveil par alerte A-07). Voir `CHANGELOG.md`.
 
 ## Fonctions
 
@@ -12,7 +12,7 @@ Tableau de bord multi-imprimantes (X1C, H2C, H3C envisagée) sur M5Stack Tab5 : 
 | Assistant d'ajout d'imprimantes (découverte SSDP ou saisie), MQTT en direct, tuiles d'accueil | 0.3.0 | validé |
 | Vue détaillée, AMS / AMS HT / bobine externe, alertes sonores (fin d'impression, erreur) | 0.4.0 | validé (sons de fin et d'erreur à retester sur une vraie impression) |
 | Inventaire Tiger Studio (filtres, cache flash), lien avec l'AMS | 0.5.0 | validé (sauf T5-13) |
-| Réglages > Affichage (luminosité, extinction automatique) | 0.5.1 | à valider (tests A) |
+| Réglages > Affichage (luminosité, extinction automatique, réveil par alerte) | 0.5.1 | validé (sauf A-07) |
 | Caméra | 0.6.0 | prévu |
 | Stabilisation, H3C | 1.0.0 | prévu |
 

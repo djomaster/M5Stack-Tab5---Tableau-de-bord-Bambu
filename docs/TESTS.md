@@ -104,10 +104,10 @@ Informations de l'appareil à compléter au premier test :
 
 | N° | Test | Résultat attendu | Résultat | Remarque |
 |---|---|---|---|---|
-| A-01 | Compilation | « SUCCESS » | À faire | |
+| A-01 | Compilation | « SUCCESS » | OK | |
 | A-02 | Réglages > Affichage | L'écran s'ouvre, affiche « Luminosité : 70 % » et « Extinction de l'écran : Jamais » | OK | |
 | A-03 | Luminosité | « - » et « + » changent la luminosité de l'écran par pas de 10 %, entre 10 et 100 % | OK | |
 | A-04 | Persistance | Après redémarrage (bouton Redémarrer), les deux réglages sont conservés | OK | |
-| A-05 | Extinction | Avec « après 1 min » : après une minute sans toucher, l'écran s'éteint ; le premier toucher le rallume à la luminosité choisie sans actionner de bouton | À refaire | v1 : atténuation, remplacée par l'extinction (demande utilisateur) |
+| A-05 | Extinction | Avec « après 1 min » : après une minute sans toucher, l'écran s'éteint ; le premier toucher le rallume à la luminosité choisie sans actionner de bouton | OK | v1 : atténuation, remplacée par l'extinction (demande utilisateur) |
 | A-06 | Extinction et impression | L'écran éteint continue de se mettre à jour (pas de gel) | OK | |
 | A-07 | Réveil par alerte | Écran éteint (extinction réglée) : à la fin d'une impression ou à l'apparition d'une erreur, l'écran se rallume tout seul | À faire | À tester avec une vraie impression, en même temps que T4-09 et T4-10 |

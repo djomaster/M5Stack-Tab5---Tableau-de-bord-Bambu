@@ -6,6 +6,8 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
+## [0.5.1] - 2026-11-17 (validée sauf A-07, réveil par alerte, à tester avec une impression)
+
 ### Ajouté
 - L'écran éteint se rallume à la fin d'une impression et à l'apparition d'une erreur (même si les sons sont désactivés).
 - Réglages > Affichage : luminosité de l'écran (10 à 100 %) et extinction automatique de l'écran après 1, 5 ou 15 minutes d'inactivité ; le premier toucher le rallume sans actionner ce qui se trouve dessous. Réglages conservés après redémarrage.
