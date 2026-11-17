@@ -15,41 +15,43 @@ static String d_ams_sig;
 
 static void ev_detail_back(lv_event_t *e) { ev_go_home(e); }
 
+static void tray_card(lv_obj_t *parent, const Tray &T, bool active, int x, int y) {
+  lv_obj_t *c = mk_card(parent, 150, 84, active ? C_ACC : C_LINE2);
+  lv_obj_set_pos(c, x, y);
+  if (T.present) {
+    lv_obj_t *sw = lv_obj_create(c);
+    plain(sw, T.color);
+    lv_obj_set_size(sw, 34, 34);
+    lv_obj_set_style_radius(sw, 17, 0);
+    lv_obj_set_style_border_width(sw, 2, 0);
+    lv_obj_set_style_border_color(sw, col(C_LINE2), 0);
+    lv_obj_set_pos(sw, 12, 10);
+    lv_obj_set_pos(mk_label(c, T.type.c_str(), FB16, C_TEXT), 56, 14);
+    String r = T.remain >= 0 ? String(T.remain) + " %" : String("-");
+    lv_obj_set_pos(mk_label(c, r.c_str(), F16, C_MUTED), 12, 52);
+  } else {
+    lv_obj_set_pos(mk_label(c, "Vide", F16, C_MUTED), 12, 28);
+  }
+}
+
 static void rebuild_ams(const PrinterState &s) {
   lv_obj_clean(d_ams);
-  lv_obj_set_pos(mk_label(d_ams, "Filaments (AMS)", FB20, C_TEXT), 24, 18);
+  lv_obj_set_pos(mk_label(d_ams, "Filaments", FB20, C_TEXT), 24, 18);
   int units = 0;
   for (int i = 0; i < MAX_TRAYS; i++)
     if (s.trays[i].present) units = i / 4 + 1;
-  if (units == 0) {
-    lv_obj_set_pos(mk_label(d_ams, "Aucune bobine détectée.", F18, C_MUTED), 24, 70);
-    return;
-  }
   for (int u = 0; u < units; u++) {
     String t = "AMS " + String(u + 1);
     lv_obj_set_pos(mk_label(d_ams, t.c_str(), F16, C_MUTED), 24, 62 + u * 112);
-    for (int k = 0; k < 4; k++) {
-      int idx = u * 4 + k;
-      const Tray &T = s.trays[idx];
-      bool active = (s.tray_now == idx);
-      lv_obj_t *c = mk_card(d_ams, 150, 84, active ? C_ACC : C_LINE2);
-      lv_obj_set_pos(c, 24 + k * 164, 86 + u * 112);
-      if (T.present) {
-        lv_obj_t *sw = lv_obj_create(c);
-        plain(sw, T.color);
-        lv_obj_set_size(sw, 34, 34);
-        lv_obj_set_style_radius(sw, 17, 0);
-        lv_obj_set_style_border_width(sw, 2, 0);
-        lv_obj_set_style_border_color(sw, col(C_LINE2), 0);
-        lv_obj_set_pos(sw, 12, 10);
-        lv_obj_set_pos(mk_label(c, T.type.c_str(), FB16, C_TEXT), 56, 14);
-        String r = T.remain >= 0 ? String(T.remain) + " %" : String("-");
-        lv_obj_set_pos(mk_label(c, r.c_str(), F16, C_MUTED), 12, 52);
-      } else {
-        lv_obj_set_pos(mk_label(c, "Vide", F16, C_MUTED), 12, 28);
-      }
-    }
+    for (int k = 0; k < 4; k++) tray_card(d_ams, s.trays[u * 4 + k], s.tray_now == u * 4 + k, 24 + k * 164, 86 + u * 112);
   }
+  // Bobine(s) externe(s)
+  int y = 62 + units * 112;
+  lv_obj_set_pos(mk_label(d_ams, "Bobine externe", F16, C_MUTED), 24, y);
+  int n_ext = s.ext[1].present ? 2 : 1;
+  for (int k = 0; k < n_ext; k++) tray_card(d_ams, s.ext[k], s.tray_now == 254 && k == 0, 24 + k * 164, y + 24);
+  if (units == 0 && !s.ext[0].present && !s.ext[1].present)
+    lv_obj_set_pos(mk_label(d_ams, "Aucun AMS détecté.", F16, C_MUTED), 24, y + 122);
 }
 
 static void detail_tick(lv_timer_t *) {
@@ -89,6 +91,8 @@ static void detail_tick(lv_timer_t *) {
   String sig = String(s.tray_now) + ":";
   for (int i = 0; i < MAX_TRAYS; i++)
     sig += String(s.trays[i].present) + s.trays[i].type + String(s.trays[i].color, HEX) + String(s.trays[i].remain) + ";";
+  for (int k = 0; k < 2; k++)
+    sig += String(s.ext[k].present) + s.ext[k].type + String(s.ext[k].color, HEX) + String(s.ext[k].remain) + ";";
   if (sig != d_ams_sig) {
     d_ams_sig = sig;
     rebuild_ams(s);
@@ -128,8 +132,15 @@ static void ev_vol_plus(lv_event_t *) {
   refresh_alerts();
   alerts_play(Sound::Test);
 }
-static void ev_test_finish(lv_event_t *) { alerts_play(Sound::Finish); }
-static void ev_test_error(lv_event_t *) { alerts_play(Sound::Error); }
+static void test_sound(Sound s) {
+  if (!alerts_enabled()) {
+    toast("Les sons sont désactivés");
+    return;
+  }
+  alerts_play(s);
+}
+static void ev_test_finish(lv_event_t *) { test_sound(Sound::Finish); }
+static void ev_test_error(lv_event_t *) { test_sound(Sound::Error); }
 
 void alerts_screen_open() {
   refresh_alerts();

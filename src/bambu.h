@@ -29,6 +29,7 @@ struct PrinterState {
   float bed = 0;
   int tray_now = -1;  // bobine active : unité*4 + bobine ; 254 = bobine externe ; -1 = inconnu
   Tray trays[MAX_TRAYS];
+  Tray ext[2];  // bobines externes (hors AMS) : 1 sur X1C, jusqu'à 2 sur la série H2
 };
 
 void bambu_start();

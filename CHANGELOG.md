@@ -16,6 +16,10 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ### Modifié
 - Écran pivoté de 180° (D-015).
 
+### Corrigé
+- Bobine externe (hors AMS) non détectée sur la X1C : lecture de `vt_tray` (et `vir_slot` pour la série H2), affichage dans « Bobine externe ».
+- Sons désactivés : les essais et le volume émettaient encore un son ; silence complet désormais, avec un message sur l'écran Alertes.
+
 ### Limites connues
 - Les codes d'erreur restent affichés bruts.
 - Lecture de l'AMS écrite d'après le format des rapports Bambu ; à confirmer sur la H2C (AMS 2 Pro / HT) et la X1C.

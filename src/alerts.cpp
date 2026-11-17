@@ -69,6 +69,7 @@ void alerts_set_volume(int v) {
 }
 
 void alerts_play(Sound s) {
+  if (!g_on) return;  // sons désactivés : silence complet
   if (!g_timer) g_timer = lv_timer_create(seq_step, 30, nullptr);
   apply_volume();
   g_seq = (s == Sound::Error) ? MEL_ERROR : MEL_FINISH;

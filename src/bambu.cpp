@@ -80,6 +80,27 @@ struct Conn {
     if (p["print_error"].is<int>()) st.error = p["print_error"].as<int>();
     if (p["nozzle_temper"].is<float>()) st.nozzle = p["nozzle_temper"].as<float>();
     if (p["bed_temper"].is<float>()) st.bed = p["bed_temper"].as<float>();
+    {
+      auto read_ext = [&](JsonObject t, Tray &T) {
+        if (t.isNull()) return;
+        if (t["tray_type"].is<const char *>()) T.type = t["tray_type"].as<const char *>();
+        if (t["tray_color"].is<const char *>()) {
+          String c = t["tray_color"].as<const char *>();
+          if (c.length() >= 6) T.color = strtoul(c.substring(0, 6).c_str(), nullptr, 16);
+        }
+        if (t["remain"].is<int>()) T.remain = t["remain"].as<int>();
+        T.present = T.type.length() > 0;
+      };
+      read_ext(p["vt_tray"], st.ext[0]);
+      JsonArray vir = p["vir_slot"];
+      if (!vir.isNull()) {
+        int k = 0;
+        for (JsonObject t : vir) {
+          if (k >= 2) break;
+          read_ext(t, st.ext[k++]);
+        }
+      }
+    }
     JsonObject ams = p["ams"];
     if (!ams.isNull()) {
       if (ams["tray_now"].is<const char *>()) st.tray_now = atoi(ams["tray_now"].as<const char *>());
@@ -193,6 +214,10 @@ void bambu_start() {
   f["nozzle_temper"] = true;
   f["bed_temper"] = true;
   f["ams"]["tray_now"] = true;
+  for (const char *k : {"tray_type", "tray_color", "remain"}) {
+    f["vt_tray"][k] = true;
+    f["vir_slot"][0][k] = true;
+  }
   f["ams"]["ams"][0]["id"] = true;
   f["ams"]["ams"][0]["tray"][0]["id"] = true;
   f["ams"]["ams"][0]["tray"][0]["tray_type"] = true;
