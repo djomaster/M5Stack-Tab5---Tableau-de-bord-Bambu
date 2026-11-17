@@ -26,6 +26,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - La tâche réseau Tiger Studio n'est créée que si un compte est connecté.
 
 ### Corrigé
+- Tiger Studio ne suspend plus les imprimantes que si la mémoire interne est insuffisante (bloc libre < 80 Ko) ; première synchronisation 30 s après le démarrage, pour ne pas concurrencer la connexion des imprimantes. Délai d'attente MQTT remis à 8 s (3 s provoquait des échecs « rc=-4 » quand le processeur était partagé).
 - Redémarrages par watchdog : le journal et le fichier ELF montrent que PubSubClient attend la réponse de l'imprimante (CONNACK) en boucle active pendant 6 s, plus que le délai du watchdog (5 s). Délai ramené à 3 s, et la surveillance de la tâche d'inactivité du cœur 0 est retirée par sécurité (par la reconfiguration officielle du watchdog ; un premier essai par désinscription directe inondait la console de « task not found »).
 - Tiger Studio : lecture du JSON tronquée (`IncompleteInput`, noms de marques et d'inventaire incomplets) : le corps de la réponse est maintenant lu en entier avant l'analyse.
 - Connexion Tiger Studio : la mémoire interne ne suffit pas pour une session TLS tant que les imprimantes gardent les leurs ouvertes (`esp-aes : Failed to allocate`). Les connexions MQTT sont suspendues pendant une synchronisation Tiger Studio (quelques secondes), puis reprennent seules. Synchronisation automatique toutes les 30 minutes au lieu de 10.

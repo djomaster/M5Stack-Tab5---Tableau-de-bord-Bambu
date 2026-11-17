@@ -320,6 +320,25 @@ static bool do_sync() {
   return true;
 }
 
+// Suspend les connexions MQTT des imprimantes seulement si la mémoire interne ne permet pas une session TLS de plus
+struct PrinterPause {
+  bool active = false;
+  PrinterPause() {
+    size_t blk = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL);
+    if (blk < 80000) {
+      Serial.printf("Tiger : pause des imprimantes (bloc interne max %u)\n", (unsigned)blk);
+      bambu_pause(true);
+      active = true;
+    }
+  }
+  ~PrinterPause() {
+    if (active) {
+      bambu_pause(false);
+      Serial.println("Tiger : reprise des imprimantes");
+    }
+  }
+};
+
 static void tiger_task(void *) {
   for (;;) {
     if (g_req_logout) {
@@ -336,11 +355,11 @@ static void tiger_task(void *) {
       g_req_login = false;
       String e = g_req_email, p = g_req_pass;
       g_req_pass = "";
-      Serial.println("Tiger : pause des connexions imprimantes (connexion)");
-      bambu_pause(true);  // les sessions TLS des imprimantes occupent la mémoire interne dont Tiger Studio a besoin
-      bool ok = do_login(e, p);
-      bambu_pause(false);
-      Serial.printf("Tiger : reprise des imprimantes (connexion %s)\n", ok ? "reussie" : "echouee");
+      bool ok;
+      {
+        PrinterPause pp;  // libère la mémoire interne des sessions TLS des imprimantes si elle manque
+        ok = do_login(e, p);
+      }
       if (ok) g_req_sync = true;
     } else if (g_req_login && !online) {
       g_req_login = false;
@@ -352,11 +371,11 @@ static void tiger_task(void *) {
       bool due = g_last_sync == 0 ? now >= g_next_try : (now - g_last_sync > SYNC_PERIOD_MS);
       if (g_req_sync || (due && now >= g_next_try)) {
         g_req_sync = false;
-        Serial.println("Tiger : pause des connexions imprimantes (synchro)");
-        bambu_pause(true);
-        bool ok = do_sync();
-        bambu_pause(false);
-        Serial.printf("Tiger : reprise des imprimantes (synchro %s)\n", ok ? "reussie" : "echouee");
+        bool ok;
+        {
+          PrinterPause pp;
+          ok = do_sync();
+        }
         if (!ok) g_next_try = millis() + RETRY_PERIOD_MS;
       }
     }
@@ -380,6 +399,7 @@ void tiger_begin() {
   g_refresh = pr.getString("rtoken", "");
   g_uid = pr.getString("uid", "");
   pr.end();
+  g_next_try = 30000;  // première synchro 30 s après le démarrage : les imprimantes se connectent d'abord
   if (g_refresh.length()) {
     g_state = TigerState::Syncing;
     ensure_task();  // sans compte, la tâche (et sa pile de 24 Ko en mémoire interne) n'est pas créée

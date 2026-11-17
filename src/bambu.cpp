@@ -45,7 +45,7 @@ struct Conn {
     net.setHandshakeTimeout(8);  // secondes (120 par défaut : bloquerait la tâche réseau)
     net.setTimeout(6);
     mqtt.setServer(cfg.ip.c_str(), 8883);
-    mqtt.setSocketTimeout(3);  // PubSubClient attend le CONNACK en boucle active : moins que le watchdog (5 s)
+    mqtt.setSocketTimeout(8);  // attente du CONNACK ; le watchdog du cœur 0 est désactivé (voir bambu_start)
     mqtt.setKeepAlive(30);
     // PubSubClient stocke la taille sur 16 bits : 65535 octets au maximum (65536 ou plus échoue sans erreur).
     if (!mqtt.setBufferSize(65535)) Serial.println("MQTT : tampon de 64 Ko non alloue");
