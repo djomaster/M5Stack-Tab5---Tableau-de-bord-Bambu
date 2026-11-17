@@ -6,7 +6,9 @@
 #include <mbedtls/base64.h>
 #include <mbedtls/md5.h>
 #include <stdarg.h>
+#include <esp_timer.h>
 #include "bambu.h"
+#include "h264i.h"
 #include "tls_gate.h"
 
 static SemaphoreHandle_t g_mx = nullptr;
@@ -175,6 +177,61 @@ static void parse_pps(const uint8_t *nal, size_t len) {
   g_cabac = (int)b.u1();
 }
 
+// ---------------------------------------------------------------- decodage d'essai (chronometrage sur la tablette)
+static const uint32_t MAX_PICS = 3;
+static H264Intra *g_dec = nullptr;
+static uint8_t *g_nal = nullptr;
+static size_t g_nal_len = 0, g_nal_cap = 0;
+static bool g_fu_open = false;
+static uint32_t g_pics = 0, g_dec_errs = 0, g_pic_ms[MAX_PICS];
+static int64_t g_pic_us = 0;
+static const char *g_dec_err = "";
+
+static void *psram_alloc(size_t n) { return heap_caps_malloc(n, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT); }
+static void psram_free(void *p) { heap_caps_free(p); }
+
+// Libere le decodeur et le tampon de reassemblage a la sortie de la sonde
+struct DecGuard {
+  DecGuard() {
+    g_pics = g_dec_errs = 0;
+    g_pic_us = 0;
+    g_fu_open = false;
+    g_nal_len = 0;
+    g_dec_err = "";
+    g_nal_cap = 400 * 1024;
+    g_nal = (uint8_t *)psram_alloc(g_nal_cap);
+    g_dec = new H264Intra(psram_alloc, psram_free);
+  }
+  ~DecGuard() {
+    delete g_dec;
+    g_dec = nullptr;
+    psram_free(g_nal);
+    g_nal = nullptr;
+  }
+};
+
+// Une unite NAL complete (sans code de debut) : SPS, PPS et tranches IDR vont au decodeur, les 3 premieres images sont chronometrees.
+static void nal_complete(const uint8_t *nal, size_t len) {
+  if (!g_dec || g_pics >= MAX_PICS || len < 2) return;
+  int t = nal[0] & 0x1F;
+  if (t != 5 && t != 7 && t != 8) return;
+  int64_t t0 = esp_timer_get_time();
+  int r = g_dec->feed(nal, len);
+  int64_t dt = esp_timer_get_time() - t0;
+  if (r < 0) {
+    g_dec_errs++;
+    g_dec_err = g_dec->last_error();
+    return;
+  }
+  if (t == 5) {
+    g_pic_us += dt;
+    if (g_dec->picture_ready()) {
+      g_pic_ms[g_pics++] = (uint32_t)(g_pic_us / 1000);
+      g_pic_us = 0;
+    }
+  }
+}
+
 // ---------------------------------------------------------------- statistiques du flux
 static uint32_t st_frames, st_bytes, st_idr, st_i, st_p, st_b, st_pkts, st_lost;
 static int32_t st_last_seq;
@@ -200,7 +257,10 @@ static void handle_rtp(const uint8_t *p, size_t len) {
   if (len < 13 || (p[0] >> 6) != 2) return;
   st_pkts++;
   int32_t seq = (p[2] << 8) | p[3];
-  if (st_last_seq >= 0 && seq != ((st_last_seq + 1) & 0xFFFF)) st_lost++;
+  if (st_last_seq >= 0 && seq != ((st_last_seq + 1) & 0xFFFF)) {
+    st_lost++;
+    g_fu_open = false;  // une trame perdue invalide l'unite NAL fragmentee en cours
+  }
   st_last_seq = seq;
   size_t off = 12 + 4 * (p[0] & 0x0F);
   if (p[0] & 0x10) {
@@ -215,6 +275,7 @@ static void handle_rtp(const uint8_t *p, size_t len) {
   int type = n[0] & 0x1F;
   if (type >= 1 && type <= 23) {
     on_nal(type, n + 1, nl - 1, n, nl);
+    nal_complete(n, nl);
   } else if (type == 24) {  // STAP-A : plusieurs NAL
     size_t i = 1;
     while (i + 2 < nl) {
@@ -222,10 +283,27 @@ static void handle_rtp(const uint8_t *p, size_t len) {
       i += 2;
       if (sz == 0 || i + sz > nl) break;
       on_nal(n[i] & 0x1F, n + i + 1, sz - 1, n + i, sz);
+      nal_complete(n + i, sz);
       i += sz;
     }
   } else if (type == 28 && nl > 2) {  // FU-A : on ne lit que le début de chaque NAL fragmenté
-    if (n[1] & 0x80) on_nal(n[1] & 0x1F, n + 2, nl - 2, n + 1, nl - 1);
+    if (n[1] & 0x80) {
+      on_nal(n[1] & 0x1F, n + 2, nl - 2, n + 1, nl - 1);
+      g_nal_len = 0;
+      g_fu_open = g_nal != nullptr;
+      if (g_fu_open) g_nal[g_nal_len++] = (uint8_t)((n[0] & 0xE0) | (n[1] & 0x1F));
+    }
+    if (g_fu_open) {
+      size_t add = nl - 2;
+      if (g_nal_len + add <= g_nal_cap) {
+        memcpy(g_nal + g_nal_len, n + 2, add);
+        g_nal_len += add;
+      } else g_fu_open = false;
+      if (g_fu_open && (n[1] & 0x40)) {
+        nal_complete(g_nal, g_nal_len);
+        g_fu_open = false;
+      }
+    }
   }
 }
 
@@ -410,6 +488,7 @@ static void feed_nal_b64(const String &b64, bool is_sps) {
   if (mbedtls_base64_decode(out, sizeof(out), &ol, (const unsigned char *)b64.c_str(), b64.length()) != 0 || ol < 2) return;
   if (is_sps) parse_sps(out, ol);
   else parse_pps(out, ol);
+  if (g_dec) g_dec->feed(out, ol);
 }
 
 static void run_probe(const PrinterCfg &cfg) {
@@ -481,6 +560,7 @@ static void run_probe(const PrinterCfg &cfg) {
     rep("ECHEC : pas de piste video dans le SDP");
     return;
   }
+  DecGuard dec_guard;
   if (sprops.length()) {
     int comma = sprops.indexOf(',');
     feed_nal_b64(comma < 0 ? sprops : sprops.substring(0, comma), true);
@@ -571,6 +651,15 @@ static void run_probe(const PrinterCfg &cfg) {
   rep("Recu en %.1f s : %u images (%.1f /s), %u Ko/s, %u paquets, %u perdus", secs, (unsigned)st_frames, st_frames / secs,
       (unsigned)(st_bytes / 1024.0f / secs), (unsigned)st_pkts, (unsigned)st_lost);
   rep("Tranches : I %u, P %u, B %u (IDR %u)", (unsigned)st_i, (unsigned)st_p, (unsigned)st_b, (unsigned)st_idr);
+  if (g_pics > 0) {
+    String ms;
+    for (uint32_t i = 0; i < g_pics; i++) ms += String(i ? " / " : "") + String((unsigned)g_pic_ms[i]);
+    rep("Decodeur maison (High, CABAC) : %u images IDR, %s ms chacune, %dx%d", (unsigned)g_pics, ms.c_str(), g_dec->width(),
+        g_dec->height());
+  } else {
+    rep("Decodeur maison : aucune image complete (%u erreurs) %s", (unsigned)g_dec_errs, g_dec_err);
+  }
+  rep("PSRAM libre : %u Mo", (unsigned)(heap_caps_get_free_size(MALLOC_CAP_SPIRAM) / (1024 * 1024)));
 
   bool cbp = g_sps.ok && g_sps.profile == 66;
   bool simple = g_sps.ok && g_cabac == 0 && st_b == 0 && g_sps.profile <= 77;
@@ -608,5 +697,5 @@ void camera_probe_start(const PrinterCfg &cfg) {
   g_report = "";
   xSemaphoreGive(g_mx);
   g_running = true;
-  xTaskCreatePinnedToCore(probe_task, "cam_probe", 16384, new PrinterCfg(cfg), 0, nullptr, 0);
+  xTaskCreatePinnedToCore(probe_task, "cam_probe", 20480, new PrinterCfg(cfg), 0, nullptr, 0);
 }
