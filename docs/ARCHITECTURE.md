@@ -32,7 +32,25 @@ Afficher sur un M5Stack Tab5 l'état de plusieurs imprimantes Bambu Lab (X1C, H2
 
 ## Configuration
 
-Les imprimantes seront décrites dans un fichier JSON sur carte SD (nom, adresse IP, numéro de série, code d'accès). Aucun secret ne doit être écrit dans le code ni dans git. Le fichier `src/config.h` (WiFi) est ignoré par git ; `src/config.example.h` sert de modèle.
+Les imprimantes sont configurées sur le Tab5 lui-même par un assistant (voir plus bas) et enregistrées dans la mémoire interne de l'appareil (nom, adresse IP, numéro de série, code d'accès). Il n'y a pas de fichier de configuration à éditer à la main. Aucun secret ne doit être écrit dans le code ni dans git. Le fichier `src/config.h` (WiFi) est ignoré par git ; `src/config.example.h` sert de modèle.
+
+## Assistant de configuration des imprimantes
+
+Statut : prévu pour l'étape 2, non réalisé.
+
+Parcours pour ajouter une imprimante, tout au toucher :
+
+1. **Recherche** : le Tab5 cherche les imprimantes Bambu Lab sur le réseau local (annonce SSDP). Chaque imprimante trouvée affiche son modèle, son adresse IP et son numéro de série. Si rien n'est trouvé, saisie manuelle de l'adresse et du numéro de série.
+2. **Code d'accès** : saisie du code du mode LAN (affiché sur l'écran de l'imprimante) avec le clavier à l'écran.
+3. **Test** : connexion MQTT d'essai avec un résultat clair (réussi, code refusé, imprimante injoignable, mode LAN désactivé).
+4. **Nom** : nom affiché sur la tuile (par défaut le modèle).
+5. **Enregistrement** : l'imprimante apparaît dans l'accueil. Une imprimante se modifie ou se supprime depuis les réglages.
+
+Contraintes :
+- Le code d'accès est saisi masqué et jamais écrit dans les journaux série.
+- Il est stocké dans la mémoire interne du Tab5 (en clair, comme sur l'imprimante) : quiconque a l'appareil en main peut le retrouver. À noter dans les réglages de sécurité.
+- Un assistant identique doit permettre de configurer le WiFi (à confirmer, voir `ROADMAP.md`).
+- La découverte automatique reste à valider sur les trois modèles ; la saisie manuelle est toujours disponible.
 
 ## Hors périmètre
 
