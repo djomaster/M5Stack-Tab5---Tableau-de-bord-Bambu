@@ -105,8 +105,8 @@ Informations de l'appareil à compléter au premier test :
 | N° | Test | Résultat attendu | Résultat | Remarque |
 |---|---|---|---|---|
 | A-01 | Compilation | « SUCCESS » | À faire | |
-| A-02 | Réglages > Affichage | L'écran s'ouvre, affiche « Luminosité : 70 % » et « Atténuation : Jamais » | À faire | |
-| A-03 | Luminosité | « - » et « + » changent la luminosité de l'écran par pas de 10 %, entre 10 et 100 % | À faire | |
-| A-04 | Persistance | Après redémarrage (bouton Redémarrer), les deux réglages sont conservés | À faire | |
-| A-05 | Atténuation | Avec « après 1 min » : après une minute sans toucher, l'écran devient très sombre ; un toucher le rallume à la luminosité choisie | À faire | |
-| A-06 | Atténuation et impression | L'écran atténué continue de se mettre à jour (pas de gel) | À faire | |
+| A-02 | Réglages > Affichage | L'écran s'ouvre, affiche « Luminosité : 70 % » et « Extinction de l'écran : Jamais » | OK | |
+| A-03 | Luminosité | « - » et « + » changent la luminosité de l'écran par pas de 10 %, entre 10 et 100 % | OK | |
+| A-04 | Persistance | Après redémarrage (bouton Redémarrer), les deux réglages sont conservés | OK | |
+| A-05 | Extinction | Avec « après 1 min » : après une minute sans toucher, l'écran s'éteint ; le premier toucher le rallume à la luminosité choisie sans actionner de bouton | À refaire | v1 : atténuation, remplacée par l'extinction (demande utilisateur) |
+| A-06 | Extinction et impression | L'écran éteint continue de se mettre à jour (pas de gel) | OK | |

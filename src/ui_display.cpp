@@ -1,4 +1,4 @@
-// Réglages > Affichage : luminosité de l'écran et atténuation automatique après inactivité.
+// Réglages > Affichage : luminosité de l'écran et extinction automatique après inactivité.
 #include <M5Unified.h>
 #include <Preferences.h>
 #include <lvgl.h>
@@ -13,7 +13,7 @@ static bool g_dimmed = false;
 static lv_obj_t *d_bri_label, *d_dim_label;
 static const int DIM_MIN[] = {0, 1, 5, 15};
 static const char *DIM_TXT[] = {"Jamais", "après 1 min", "après 5 min", "après 15 min"};
-static const int DIM_LEVEL = 5;  // luminosité (%) pendant l'atténuation
+static lv_obj_t *g_cover = nullptr;  // couche transparente qui absorbe le toucher de réveil
 
 static void apply_brightness(int pct) { M5.Display.setBrightness((uint8_t)(pct * 255 / 100)); }
 
@@ -29,7 +29,7 @@ static void refresh() {
   char buf[40];
   snprintf(buf, sizeof(buf), "Luminosité : %d %%", g_bri);
   lv_label_set_text(d_bri_label, buf);
-  snprintf(buf, sizeof(buf), "Atténuation : %s", DIM_TXT[g_dim_idx]);
+  snprintf(buf, sizeof(buf), "Extinction de l'écran : %s", DIM_TXT[g_dim_idx]);
   lv_label_set_text(d_dim_label, buf);
 }
 
@@ -51,19 +51,32 @@ static void ev_dim_next(lv_event_t *) {
   refresh();
 }
 
-// Appelé chaque seconde : atténue l'écran après l'inactivité choisie, le rallume au toucher.
+static void wake() {
+  if (!g_dimmed) return;
+  g_dimmed = false;
+  apply_brightness(g_bri);
+  if (g_cover) {
+    lv_obj_delete_async(g_cover);
+    g_cover = nullptr;
+  }
+}
+static void ev_cover(lv_event_t *) { wake(); }
+
+// Appelé chaque seconde : éteint l'écran après l'inactivité choisie. Le premier toucher le rallume sans actionner ce qui se trouve dessous.
 static void dim_tick(lv_timer_t *) {
   uint32_t idle = lv_display_get_inactive_time(nullptr);
   if (g_dimmed) {
-    if (idle < 1500) {
-      g_dimmed = false;
-      apply_brightness(g_bri);
-    }
+    if (idle < 1500) wake();
     return;
   }
   if (g_dim_idx > 0 && idle > (uint32_t)DIM_MIN[g_dim_idx] * 60000UL) {
     g_dimmed = true;
-    apply_brightness(DIM_LEVEL);
+    g_cover = lv_obj_create(lv_layer_top());
+    lv_obj_remove_style_all(g_cover);
+    lv_obj_set_size(g_cover, SCR_W, 720);
+    lv_obj_add_flag(g_cover, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(g_cover, ev_cover, LV_EVENT_PRESSED, nullptr);
+    apply_brightness(0);
   }
 }
 
@@ -93,7 +106,7 @@ void ui_display_build() {
   d_dim_label = mk_label(c, "", FB20, C_TEXT);
   lv_obj_set_pos(d_dim_label, 28, 150);
   lv_obj_set_pos(mk_button(c, "Changer", 200, 56, C_CARD2, C_TEXT, F18, ev_dim_next), 420, 140);
-  lv_obj_set_pos(mk_label(c, "L'écran s'atténue après l'inactivité choisie ; un toucher le rallume.", F16, C_MUTED), 28, 250);
+  lv_obj_set_pos(mk_label(c, "L'écran s'éteint après l'inactivité choisie ; un toucher le rallume (les sons d'alerte restent actifs).", F16, C_MUTED), 28, 250);
   lv_timer_create(dim_tick, 1000, nullptr);
   refresh();
 }

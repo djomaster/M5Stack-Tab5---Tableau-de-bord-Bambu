@@ -7,7 +7,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ## [Non publié]
 
 ### Ajouté
-- Réglages > Affichage : luminosité de l'écran (10 à 100 %) et atténuation automatique après 1, 5 ou 15 minutes d'inactivité ; un toucher rallume l'écran. Réglages conservés après redémarrage.
+- Réglages > Affichage : luminosité de l'écran (10 à 100 %) et extinction automatique de l'écran après 1, 5 ou 15 minutes d'inactivité ; le premier toucher le rallume sans actionner ce qui se trouve dessous. Réglages conservés après redémarrage.
 
 ## [0.5.0] - 2026-11-17 (validée sur l'appareil, sauf T5-13 « Se déconnecter » à tester)
 
