@@ -25,13 +25,13 @@ Informations de l'appareil à compléter au premier test :
 
 | N° | Test | Résultat attendu | Statut | Notes |
 |---|---|---|---|---|
-| T2-01 | Compilation de l'environnement `tab5` (LVGL, polices) | « SUCCESS » sans erreur | À faire | |
-| T2-02 | Téléversement et démarrage | L'écran s'allume, pas de redémarrage en boucle | À faire | |
-| T2-03 | Orientation | Affichage en paysage 1280 × 720, pas de déformation | À faire | |
-| T2-04 | Alignement du toucher | Un appui touche le bouton visé | À faire | |
-| T2-05 | Accents | « Réglages », « À propos », « Filament épuisé » s'affichent correctement | À faire | |
-| T2-06 | Navigation | Accueil, Réglages, WiFi, À propos et retour fonctionnent | À faire | |
-| T2-07 | Recherche WiFi | La liste des réseaux apparaît en quelques secondes | À faire | |
-| T2-08 | Saisie et connexion | Mot de passe saisi (Maj, Afficher), connexion, adresse IP affichée | À faire | |
-| T2-09 | Persistance | Après redémarrage, reconnexion automatique, écran d'accueil | À faire | |
-| T2-10 | Fluidité | Pas de saccade visible au défilement et à la saisie | À faire | |
+| T2-01 | Compilation de l'environnement `tab5` (LVGL, polices) | « SUCCESS » sans erreur | Réussi | |
+| T2-02 | Téléversement et démarrage | L'écran s'allume, pas de redémarrage en boucle | Réussi | |
+| T2-03 | Orientation | Affichage en paysage 1280 × 720, pas de déformation | Réussi | |
+| T2-04 | Alignement du toucher | Un appui touche le bouton visé | Réussi | |
+| T2-05 | Accents | « Réglages », « À propos », « Filament épuisé » s'affichent correctement | Réussi | |
+| T2-06 | Navigation | Accueil, Réglages, WiFi, À propos et retour fonctionnent | Réussi | |
+| T2-07 | Recherche WiFi | La liste des réseaux apparaît en quelques secondes | Réussi | |
+| T2-08 | Saisie et connexion | Mot de passe saisi (Maj, Afficher), connexion, adresse IP affichée | Réussi | |
+| T2-09 | Persistance | Après redémarrage, reconnexion automatique, écran d'accueil | Réussi | |
+| T2-10 | Fluidité | Pas de saccade visible au défilement et à la saisie | Réussi | |

@@ -6,7 +6,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
-## [0.2.0] - 2026-11-17 (à valider sur l'appareil, voir T2 dans `docs/TESTS.md`)
+## [0.2.0] - 2026-11-17
+
+Validée sur le Tab5 : tests T2-01 à T2-10 réussis (`docs/TESTS.md`).
 
 ### Ajouté
 - Interface LVGL 9.2.2 en 1280 × 720 : accueil avec données d'exemple (X1C en impression, H2C en erreur, tuile « Ajouter une imprimante »), menu Réglages, écran À propos, barre d'état (WiFi, batterie) et barre de navigation.
@@ -20,11 +22,10 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - `src/config.h` et `src/config.example.h` : le WiFi ne se configure plus par fichier (D-012).
 
 ### Corrigé
-- Échec de l'édition de liens (« can't link soft-float modules with single-float modules ») : les fichiers assembleur ARM de LVGL (Helium, Neon) sont exclus par `tools/skip_lvgl_asm.py` et l'accélération assembleur est désactivée. La compilation elle-même avait réussi (T2-01 : compilation OK, liens en cours de correction).
+- Échec de l'édition de liens (« can't link soft-float modules with single-float modules ») : les fichiers assembleur ARM de LVGL (Helium, Neon) sont exclus par `tools/skip_lvgl_asm.py` et l'accélération assembleur est désactivée.
 
 ### Limites connues
 - Les écrans Imprimantes, Alertes et Affichage affichent seulement « Disponible dans une prochaine version ». Aucune connexion aux imprimantes pour l'instant.
-- Code écrit sans pouvoir être compilé dans l'environnement de développement : la première compilation est à faire par l'utilisateur.
 
 ### Corrigé
 - `src/config.h` (WiFi) était suivi par git depuis le commit « première compilation », alors qu'il doit rester local. Il n'est plus suivi (puis supprimé en 0.2.0). Aucun mot de passe réel n'avait été commité (vérifié sur tout l'historique).
