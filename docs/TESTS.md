@@ -69,6 +69,6 @@ Informations de l'appareil à compléter au premier test :
 | T4-06 | Bobines AMS (X1C) | Idem | Réussi | Bobine externe détectée ; AMS HT de la H2C à une bobine |
 | T4-07 | Sons d'essai | Les deux boutons de test émettent un son distinct | Réussi | |
 | T4-08 | Volume et activation | Le volume change ; désactivé = aucun son ; réglage conservé après redémarrage | Réussi | Désactivation = silence complet |
-| T4-09 | Son de fin d'impression | Mélodie quand une impression se termine | À faire | |
-| T4-10 | Son d'erreur | Alarme quand une erreur ou un échec apparaît | À faire | |
+| T4-09 | Son de fin d'impression | Mélodie quand une impression se termine | À faire | Non testé à la livraison de la 0.4.0 : nécessite une vraie fin d'impression / une vraie erreur |
+| T4-10 | Son d'erreur | Alarme quand une erreur ou un échec apparaît | À faire | Non testé à la livraison de la 0.4.0 : nécessite une vraie fin d'impression / une vraie erreur |
 | T4-11 | Pas de fausse alerte | Aucun son au démarrage du Tab5 ni à la reconnexion | Réussi | |

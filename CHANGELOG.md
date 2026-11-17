@@ -6,7 +6,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
-## [0.4.0] - 2026-11-17 (à valider sur l'appareil, voir T4 dans `docs/TESTS.md`)
+## [0.4.0] - 2026-11-17
+
+Validée sur le Tab5 avec la H2C et la X1C : 9 tests sur 11 réussis (`docs/TESTS.md`). Livrée avec T4-09 (son de fin d'impression) et T4-10 (son d'erreur) non testés : ils exigent une vraie impression et une vraie erreur, à refaire à l'occasion.
 
 ### Ajouté
 - Vue détaillée d'une imprimante (toucher une tuile de l'accueil) : progression, fichier, couche, temps restant, températures de la buse et du plateau.
