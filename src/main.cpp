@@ -25,10 +25,12 @@ static void log_memory(const char *where) {
 void setup() {
   auto cfg = M5.config();
   M5.begin(cfg);
+  diag_init();
   Serial.begin(115200);
   Serial.printf("%s v%s\n", FW_NAME, FW_VERSION);
   Serial.printf("Demarrage : cause %d (1 mise sous tension, 3 logiciel, 4 panne, 5 interruption watchdog, 6 watchdog tache, 7 watchdog)\n", (int)esp_reset_reason());
 
+  diag_report_previous();
   printers_load();
   alerts_load();
   wifi_begin();
@@ -51,8 +53,12 @@ void loop() {
     last_mem = millis();
     log_memory("10 s");
   }
+  diag_mark("loop:M5");
   M5.update();
+  diag_mark("loop:wifi");
   wifi_update();
+  diag_mark("loop:lvgl");
   lv_timer_handler();
+  diag_mark("loop:fin");
   delay(5);
 }

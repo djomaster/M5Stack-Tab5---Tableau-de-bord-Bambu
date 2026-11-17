@@ -88,7 +88,7 @@ Informations de l'appareil à compléter au premier test :
 | T5-07 | Noms de marques et matières | Noms lisibles, pas « Marque 123 » | OK | |
 | T5-08 | Filtre et total | Les pastilles de matière filtrent la liste et le total | À refaire | v1 : bouton cyclique jugé peu pratique → pastilles |
 | T5-09 | Bobine presque vide | Poids en orange sous 100 g | OK | |
-| T5-10 | Persistance | Après redémarrage, l'inventaire revient sans ressaisir le mot de passe | OK | Demande : inventaire gardé en mémoire, actualisé auto (30 s écran ouvert, sinon 5 min) |
+| T5-10 | Persistance | Après redémarrage, l'inventaire revient sans ressaisir le mot de passe | À refaire | Inventaire absent après redémarrage → cache flash ajouté |
 | T5-11 | Lien AMS : puce RFID | Une bobine Bambu enregistrée affiche son poids (sans « ~ ») dans le détail | À refaire | Poids + % jugé confus → une seule valeur (poids Tiger, sinon %) |
 | T5-12 | Lien AMS : couleur/matière | Une bobine sans puce reconnue affiche un poids précédé de « ~ » | OK | présumé OK |
 | T5-13 | Déconnexion | « Se déconnecter » vide l'inventaire et retire le compte | À faire | Non rapporté |

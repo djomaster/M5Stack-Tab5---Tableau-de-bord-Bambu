@@ -7,6 +7,8 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ## [Non publié]
 
 ### Modifié
+- Inventaire : sauvegardé en mémoire flash (LittleFS, `/tiger.tsv`) avec les noms de marques et de matières ; il réapparaît dès le démarrage, avant la première synchronisation.
+- Diagnostic : les 16 dernières étapes sont conservées en mémoire RTC et affichées au démarrage suivant un plantage (« Avant le redemarrage, dernieres etapes : … »).
 - Inventaire : filtre par matière en pastilles cliquables (« Toutes » + une par matière), à la place du bouton cyclique.
 - Inventaire : synchronisation automatique toutes les 30 s tant que l'écran Inventaire est affiché, 5 min sinon ; la liste n'est redessinée que si le contenu change.
 - Détail imprimante : une seule valeur par bobine (poids Tiger, « env. » si approximatif ; sinon le pourcentage de l'imprimante).

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <vector>
 #include "fonts.h"
+#include "diag.h"
 #include "tiger.h"
 #include "ui_common.h"
 
@@ -141,6 +142,7 @@ static const int LOW_G = 100;  // seuil de stock bas, en grammes
 static void ev_open_tiger(lv_event_t *) { tiger_screen_open(); }
 
 static void ev_chip(lv_event_t *e) {
+  diag_mark("ui:chip");
   i_filter = (int)(intptr_t)lv_event_get_user_data(e);
   i_shown_filter = -2;  // force le redessin au prochain passage
 }
@@ -153,6 +155,7 @@ static void ev_inv_sync(lv_event_t *) {
 }
 
 static void rebuild_inventory() {
+  diag_mark("ui:inv_rebuild");
   lv_obj_clean(i_list);
   std::vector<Row> rows;
   int n = tiger_count();

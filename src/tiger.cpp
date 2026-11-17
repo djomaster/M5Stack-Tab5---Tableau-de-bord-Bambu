@@ -7,7 +7,7 @@
 #include <esp_heap_caps.h>
 #include <WiFi.h>
 #include <Preferences.h>
-#include <WiFi.h>
+#include <LittleFS.h>
 #include <WiFiClientSecure.h>
 #include <algorithm>
 #include <map>
@@ -301,6 +301,74 @@ static double numv(JsonVariantConst fv) {
 
 static String strv(JsonVariantConst fv) { return String((const char *)(fv["stringValue"] | "")); }
 
+
+// ---------------------------------------------------------------------
+// Cache de l'inventaire en mémoire flash (LittleFS) : il revient au démarrage sans attendre la synchronisation.
+static const char *CACHE_FILE = "/tiger.tsv";
+static bool g_fs_ok = false;
+
+static String clean_field(String s) {
+  s.replace('\t', ' ');
+  s.replace('\n', ' ');
+  s.replace('\r', ' ');
+  return s;
+}
+
+static void cache_save(const std::vector<Spool> &list) {
+  if (!g_fs_ok) return;
+  File f = LittleFS.open(CACHE_FILE, "w");
+  if (!f) return;
+  for (auto &kv : g_brands) f.printf("B\t%d\t%s\n", kv.first, clean_field(kv.second).c_str());
+  for (auto &kv : g_materials) f.printf("M\t%d\t%s\n", kv.first, clean_field(kv.second).c_str());
+  for (auto &s : list)
+    f.printf("S\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%06X\t%s\n", clean_field(s.uid).c_str(), clean_field(s.tag).c_str(),
+             clean_field(s.twin).c_str(), s.brand, s.material, s.weight, s.capacity, (unsigned)s.color,
+             clean_field(s.color_name).c_str());
+  f.close();
+}
+
+static void cache_load() {
+  g_fs_ok = LittleFS.begin(true);
+  if (!g_fs_ok) {
+    Serial.println("Tiger : systeme de fichiers indisponible, pas de cache");
+    return;
+  }
+  File f = LittleFS.open(CACHE_FILE, "r");
+  if (!f) return;
+  std::vector<Spool> list;
+  while (f.available()) {
+    String line = f.readStringUntil('\n');
+    String c[10];
+    int n = 0, start = 0;
+    for (int i = 0; i <= (int)line.length() && n < 10; i++) {
+      if (i == (int)line.length() || line[i] == '\t') {
+        c[n++] = line.substring(start, i);
+        start = i + 1;
+      }
+    }
+    if (n >= 3 && c[0] == "B") g_brands[c[1].toInt()] = c[2];
+    else if (n >= 3 && c[0] == "M") g_materials[c[1].toInt()] = c[2];
+    else if (n >= 10 && c[0] == "S") {
+      Spool s;
+      s.uid = c[1];
+      s.tag = c[2];
+      s.twin = c[3];
+      s.brand = c[4].toInt();
+      s.material = c[5].toInt();
+      s.weight = c[6].toInt();
+      s.capacity = c[7].toInt();
+      s.color = strtoul(c[8].c_str(), nullptr, 16);
+      s.color_name = c[9];
+      list.push_back(s);
+    }
+  }
+  f.close();
+  if (!g_brands.empty() && !g_materials.empty()) g_tables_loaded = true;
+  g_spools.swap(list);
+  g_data_rev++;
+  Serial.printf("Tiger : cache charge, %u bobines\n", (unsigned)g_spools.size());
+}
+
 static bool do_sync() {
   if (!ensure_token()) return false;
   set_state(TigerState::Syncing);
@@ -356,6 +424,7 @@ static bool do_sync() {
     if (page_token.isEmpty()) break;
   }
   uint32_t h = 2166136261u;
+  bool changed = false;
   for (auto &sp : list) {
     String k = sp.uid + "|" + sp.tag + "|" + sp.twin + "|" + String(sp.brand) + "|" + String(sp.material) + "|" + sp.color_name + "|" +
                String(sp.weight) + "|" + String(sp.capacity) + "|" + String(sp.color, HEX) + ";";
@@ -367,8 +436,10 @@ static bool do_sync() {
     if (h != g_data_hash || g_data_rev == 0) {
       g_data_hash = h;
       g_data_rev++;
+      changed = true;
     }
   }
+  if (changed) cache_save(g_spools);
   g_last_sync = millis();
   Serial.printf("Tiger : %u bobines synchronisees\n", (unsigned)g_spools.size());
   set_state(TigerState::Ready);
@@ -403,6 +474,7 @@ static void tiger_task(void *) {
         Lock lk;
         g_spools.clear();
         g_data_rev++;
+        if (g_fs_ok) LittleFS.remove(CACHE_FILE);
       }
       set_state(TigerState::SignedOut);
     }
@@ -451,6 +523,7 @@ static void ensure_task() {
 
 void tiger_begin() {
   g_mutex = xSemaphoreCreateMutex();
+  cache_load();
   Preferences pr;
   pr.begin("tiger", false);
   g_email = pr.getString("email", "");
