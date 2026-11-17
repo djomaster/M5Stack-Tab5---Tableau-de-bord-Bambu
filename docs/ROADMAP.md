@@ -4,7 +4,7 @@ Statuts : À faire · En cours · À valider (code écrit, pas testé sur l'appa
 
 | Étape | Contenu | Version visée | Statut |
 |---|---|---|---|
-| 1 | Squelette, test matériel : écran, tactile, batterie, WiFi | 0.1.0 | À valider |
+| 1 | Squelette, test matériel : écran, tactile, batterie, WiFi | 0.1.2 | Validé sauf WiFi (T1-07 à tester) |
 | 2 | LVGL, MQTT d'une imprimante, tuile en direct, puis les autres | 0.2.0 | À faire |
 | 3 | Vue détaillée, AMS, alertes sonores | 0.3.0 | À faire |
 | 4 | Inventaire Tiger Studio | 0.4.0 | À faire |
