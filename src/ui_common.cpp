@@ -2,7 +2,7 @@
 #include <vector>
 #include "fonts.h"
 
-lv_obj_t *scr_home, *scr_settings, *scr_wifi, *scr_about, *scr_printers, *scr_wizard;
+lv_obj_t *scr_home, *scr_settings, *scr_wifi, *scr_about, *scr_printers, *scr_wizard, *scr_detail, *scr_alerts;
 static std::vector<lv_obj_t *> status_labels;
 
 lv_color_t col(uint32_t c) { return lv_color_hex(c); }

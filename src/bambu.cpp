@@ -80,6 +80,31 @@ struct Conn {
     if (p["print_error"].is<int>()) st.error = p["print_error"].as<int>();
     if (p["nozzle_temper"].is<float>()) st.nozzle = p["nozzle_temper"].as<float>();
     if (p["bed_temper"].is<float>()) st.bed = p["bed_temper"].as<float>();
+    JsonObject ams = p["ams"];
+    if (!ams.isNull()) {
+      if (ams["tray_now"].is<const char *>()) st.tray_now = atoi(ams["tray_now"].as<const char *>());
+      JsonArray units = ams["ams"];
+      if (!units.isNull()) {
+        int ui = 0;
+        for (JsonObject u : units) {
+          if (ui >= 4) break;
+          for (JsonObject t : u["tray"].as<JsonArray>()) {
+            const char *ids = t["id"] | "";
+            int id = atoi(ids);
+            if (id < 0 || id > 3) continue;
+            Tray &T = st.trays[ui * 4 + id];
+            if (t["tray_type"].is<const char *>()) T.type = t["tray_type"].as<const char *>();
+            if (t["tray_color"].is<const char *>()) {
+              String c = t["tray_color"].as<const char *>();
+              if (c.length() >= 6) T.color = strtoul(c.substring(0, 6).c_str(), nullptr, 16);
+            }
+            if (t["remain"].is<int>()) T.remain = t["remain"].as<int>();
+            T.present = T.type.length() > 0;
+          }
+          ui++;
+        }
+      }
+    }
     st.got_report = true;
   }
 
@@ -167,6 +192,12 @@ void bambu_start() {
   f["print_error"] = true;
   f["nozzle_temper"] = true;
   f["bed_temper"] = true;
+  f["ams"]["tray_now"] = true;
+  f["ams"]["ams"][0]["id"] = true;
+  f["ams"]["ams"][0]["tray"][0]["id"] = true;
+  f["ams"]["ams"][0]["tray"][0]["tray_type"] = true;
+  f["ams"]["ams"][0]["tray"][0]["tray_color"] = true;
+  f["ams"]["ams"][0]["tray"][0]["remain"] = true;
   g_reload = true;
   xTaskCreatePinnedToCore(net_task, "bambu_net", 28672, nullptr, 1, nullptr, 0);
 }

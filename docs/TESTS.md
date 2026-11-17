@@ -54,3 +54,21 @@ Informations de l'appareil à compléter au premier test :
 | T3-10 | Suppression | Confirmation puis disparition de la liste et de l'accueil | Réussi |  |
 | T3-11 | Plusieurs imprimantes | Deux ou trois tuiles en direct, pas de plantage ni de ralentissement | Réussi | H2C + X1C |
 | T3-12 | Fluidité de l'écran pendant la connexion | Pas de gel de l'interface | Réussi | Fluide |
+
+## Étape 4 - version 0.4.0
+
+À exécuter par l'utilisateur sur le Tab5.
+
+| N° | Test | Résultat attendu | Statut | Notes |
+|---|---|---|---|---|
+| T4-01 | Compilation | « SUCCESS » | À faire | |
+| T4-02 | Orientation pivotée de 180° | Interface à l'endroit, toucher bien aligné | À faire | |
+| T4-03 | Vue détaillée | Toucher d'une tuile ouvre le détail ; retour à l'accueil | À faire | |
+| T4-04 | Valeurs du détail | Progression, fichier, couche, temps, températures cohérents avec l'imprimante | À faire | |
+| T4-05 | Bobines AMS (H2C) | Couleurs, matières et pourcentages cohérents, bobine active en surbrillance | À faire | |
+| T4-06 | Bobines AMS (X1C) | Idem | À faire | |
+| T4-07 | Sons d'essai | Les deux boutons de test émettent un son distinct | À faire | |
+| T4-08 | Volume et activation | Le volume change ; désactivé = aucun son ; réglage conservé après redémarrage | À faire | |
+| T4-09 | Son de fin d'impression | Mélodie quand une impression se termine | À faire | |
+| T4-10 | Son d'erreur | Alarme quand une erreur ou un échec apparaît | À faire | |
+| T4-11 | Pas de fausse alerte | Aucun son au démarrage du Tab5 ni à la reconnexion | À faire | |

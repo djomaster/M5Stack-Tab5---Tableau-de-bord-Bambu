@@ -6,6 +6,21 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
+## [0.4.0] - 2026-11-17 (à valider sur l'appareil, voir T4 dans `docs/TESTS.md`)
+
+### Ajouté
+- Vue détaillée d'une imprimante (toucher une tuile de l'accueil) : progression, fichier, couche, temps restant, températures de la buse et du plateau.
+- Bobines de l'AMS : couleur, matière, pourcentage restant, bobine active en surbrillance (jusqu'à 4 unités).
+- Alertes sonores par le haut-parleur du Tab5 : mélodie à la fin d'une impression, alarme à l'apparition d'une erreur ou d'un échec. Réglages > Alertes : activer/désactiver, volume (1 à 5), essais des deux sons. Réglages conservés après redémarrage.
+
+### Modifié
+- Écran pivoté de 180° (D-015).
+
+### Limites connues
+- Les codes d'erreur restent affichés bruts.
+- Lecture de l'AMS écrite d'après le format des rapports Bambu ; à confirmer sur la H2C (AMS 2 Pro / HT) et la X1C.
+- Le premier rapport reçu après connexion sert de référence : une impression terminée pendant que le Tab5 était éteint ne déclenche pas de son.
+
 ## [0.3.0] - 2026-11-17
 
 Validée sur le Tab5 avec la H2C et la X1C : tests T3-01 à T3-12 réussis (`docs/TESTS.md`).

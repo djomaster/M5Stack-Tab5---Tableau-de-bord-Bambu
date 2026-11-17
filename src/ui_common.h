@@ -28,7 +28,7 @@ struct Page {
 };
 
 // Écrans (créés dans ui.cpp et ui_printers.cpp)
-extern lv_obj_t *scr_home, *scr_settings, *scr_wifi, *scr_about, *scr_printers, *scr_wizard;
+extern lv_obj_t *scr_home, *scr_settings, *scr_wifi, *scr_about, *scr_printers, *scr_wizard, *scr_detail, *scr_alerts;
 
 lv_color_t col(uint32_t c);
 void plain(lv_obj_t *o, uint32_t bg);
@@ -57,6 +57,11 @@ void kb_set_target(lv_obj_t *ta);
 void ui_printers_build();
 void printers_screen_open();
 void wizard_open();
+
+// Vue détaillée et réglage des alertes (ui_detail.cpp)
+void ui_detail_build();
+void detail_open(int printer_index);
+void alerts_screen_open();
 
 // Libellés d'état partagés
 const char *link_text(int link, const char *gcode, bool got_report, int error);

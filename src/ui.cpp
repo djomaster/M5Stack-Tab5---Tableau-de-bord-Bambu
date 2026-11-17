@@ -2,6 +2,7 @@
 #include <M5Unified.h>
 #include <lvgl.h>
 #include <vector>
+#include "alerts.h"
 #include "bambu.h"
 #include "fonts.h"
 #include "printers.h"
@@ -13,6 +14,8 @@ static void ev_soon(lv_event_t *) { toast("Disponible dans une prochaine version
 static void ev_go_about(lv_event_t *) { go(scr_about); }
 static void ev_go_printers(lv_event_t *) { printers_screen_open(); }
 static void ev_go_wizard(lv_event_t *) { wizard_open(); }
+static void ev_go_alerts(lv_event_t *) { alerts_screen_open(); }
+static void ev_tile(lv_event_t *e) { detail_open((int)(intptr_t)lv_event_get_user_data(e)); }
 static void ev_go_wifi(lv_event_t *);
 
 // ---------- Accueil : une tuile par imprimante ----------
@@ -58,6 +61,13 @@ static void home_rebuild() {
     lv_obj_set_pos(t.remain, 24, 292);
     t.temps = mk_label(t.card, "", F18, C_MUTED);
     lv_obj_set_pos(t.temps, 24, 328);
+    lv_obj_remove_flag(t.bar, LV_OBJ_FLAG_CLICKABLE);
+    for (uint32_t k = 0; k < lv_obj_get_child_count(t.card); k++) lv_obj_add_flag(lv_obj_get_child(t.card, k), LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_add_flag(t.card, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(t.card, ev_tile, LV_EVENT_CLICKED, (void *)(intptr_t)i);
+    lv_obj_t *hint = mk_label(t.card, "Touchez pour le détail", F16, C_LINE2);
+    lv_obj_set_pos(hint, 24, 480);
+    lv_obj_add_flag(hint, LV_OBJ_FLAG_EVENT_BUBBLE);
   }
   if (n < MAX_PRINTERS) {
     lv_obj_t *c = mk_card(home_page.body, 400, 520, C_LINE2);
@@ -127,7 +137,7 @@ static void build_settings() {
     lv_event_cb_t cb;
   };
   Item items[] = {
-      {"WiFi", ev_go_wifi}, {"Imprimantes", ev_go_printers}, {"Alertes", ev_soon}, {"Affichage", ev_soon}, {"À propos", ev_go_about},
+      {"WiFi", ev_go_wifi}, {"Imprimantes", ev_go_printers}, {"Alertes", ev_go_alerts}, {"Affichage", ev_soon}, {"À propos", ev_go_about},
   };
   int y = 24;
   for (auto &it : items) {
@@ -308,6 +318,7 @@ static void status_tick(lv_timer_t *) {
     lv_label_set_text(wifi_status, buf);
   }
   home_update();
+  alerts_tick();
 }
 
 void ui_init() {
@@ -316,6 +327,7 @@ void ui_init() {
   build_about();
   build_wifi();
   ui_printers_build();
+  ui_detail_build();
   lv_timer_create(status_tick, 1000, nullptr);
   status_tick(nullptr);
 

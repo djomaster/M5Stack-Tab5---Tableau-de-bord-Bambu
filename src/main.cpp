@@ -1,8 +1,9 @@
 // Tableau de bord Bambu Lab - M5Stack Tab5
-// Version 0.3.0 : assistant d'ajout d'imprimante, connexion MQTT et tuiles en direct.
+// Version 0.4.0 : vue détaillée, bobines de l'AMS, alertes sonores.
 
 #include <M5Unified.h>
 #include <lvgl.h>
+#include "alerts.h"
 #include "bambu.h"
 #include "display_port.h"
 #include "fonts.h"
@@ -18,6 +19,7 @@ void setup() {
   Serial.printf("%s v%s\n", FW_NAME, FW_VERSION);
 
   printers_load();
+  alerts_load();
   wifi_begin();
   bambu_start();  // crée le verrou et la tâche réseau avant que l'interface ne les interroge
   display_port_init();

@@ -34,7 +34,7 @@ static void touch_cb(lv_indev_t *, lv_indev_data_t *data) {
 void display_port_init() {
   // L'écran du Tab5 est monté en portrait : on le met en paysage (1280 x 720).
   if (M5.Display.width() < M5.Display.height()) {
-    M5.Display.setRotation(1);
+    M5.Display.setRotation(3);  // paysage, pivoté de 180° par rapport à la 0.3.0 (D-015)
   }
   M5.Display.setBrightness(180);
   M5.Display.fillScreen(TFT_BLACK);
