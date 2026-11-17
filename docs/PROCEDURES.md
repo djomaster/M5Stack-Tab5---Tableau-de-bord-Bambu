@@ -30,6 +30,7 @@ Le fichier `.github/workflows/build.yml` compile le firmware sur GitHub, sans ri
 
 - **À chaque envoi sur `main`** : onglet **Actions** du dépôt, une coche verte signifie que le projet compile.
 - **Pour joindre le firmware à une version** : publier une **Release** (Releases > Draft a new release, choisir le tag, Publish). Au bout de quelques minutes (la première compilation est longue), les fichiers `bambu-dashboard-<tag>-complet.bin`, `-app.bin`, `-bootloader.bin` et `-partitions.bin` apparaissent dans la release.
+- **Pour une release déjà publiée** : Actions > « Compilation du firmware » > Run workflow, saisir le tag (par exemple `v0.5.1`) dans le champ « Tag d'une release déjà publiée », Run. Les fichiers compilés sont joints à cette release (ceux du même nom sont remplacés).
 - **À la demande** : Actions > « Compilation du firmware » > Run workflow ; les fichiers se téléchargent en bas de la page de l'exécution (30 jours).
 - **Flasher le fichier `-complet.bin`** sans PlatformIO : un seul fichier, à écrire à l'adresse **0x0** (par exemple avec l'outil en ligne esptool-js d'Espressif, Tab5 branché en USB). Non testé à ce jour.
 - Si l'exécution est rouge : ouvrir l'exécution, copier les dernières lignes de l'étape en échec et les transmettre.

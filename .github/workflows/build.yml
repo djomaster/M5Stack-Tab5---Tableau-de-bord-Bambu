@@ -1,7 +1,8 @@
 # Compilation automatique du firmware sur GitHub.
 # - à chaque envoi sur « main » et à chaque demande de fusion : vérifie que le projet compile ;
 # - à la publication d'une « Release » : compile la version du tag et joint les fichiers à la release ;
-# - à la demande (onglet Actions > Run workflow) : compile et garde les fichiers 30 jours.
+# - à la demande (onglet Actions > Run workflow) : compile et garde les fichiers 30 jours ;
+#   si on indique un tag de release déjà publiée, les fichiers sont joints à cette release.
 name: Compilation du firmware
 
 on:
@@ -11,6 +12,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag d'une release déjà publiée (ex. v0.5.1) : compile ce tag et joint les fichiers à sa release. Vide = simple compilation."
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -20,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-python@v5
         with:
@@ -40,10 +48,18 @@ jobs:
       - name: Rassembler les fichiers
         run: |
           set -e
-          NAME="${{ github.event.release.tag_name || github.sha }}"
+          B=.pio/build/tab5
+          # Fichier unique : si le script du projet ne l'a pas créé (anciens tags), on l'assemble ici.
+          if [ ! -f "$B/firmware-merged.bin" ]; then
+            P=~/.platformio/packages
+            python "$P/tool-esptoolpy/esptool.py" --chip esp32p4 merge_bin -o "$B/firmware-merged.bin" \
+              --flash_mode dio --flash_freq 80m --flash_size 16MB \
+              0x2000 "$B/bootloader.bin" 0x8000 "$B/partitions.bin" \
+              0xe000 "$P/framework-arduinoespressif32/tools/partitions/boot_app0.bin" 0x10000 "$B/firmware.bin" || echo "::warning::assemblage du fichier unique impossible"
+          fi
+          NAME="${{ github.event.release.tag_name || inputs.tag || github.sha }}"
           NAME="${NAME:0:12}"
           mkdir -p dist
-          B=.pio/build/tab5
           cp "$B/firmware.bin"   "dist/bambu-dashboard-$NAME-app.bin"
           cp "$B/bootloader.bin" "dist/bambu-dashboard-$NAME-bootloader.bin"
           cp "$B/partitions.bin" "dist/bambu-dashboard-$NAME-partitions.bin"
@@ -62,8 +78,8 @@ jobs:
           retention-days: 30
 
       - name: Joindre à la release
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || inputs.tag != ''
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.release.tag_name }}
+          tag_name: ${{ github.event.release.tag_name || inputs.tag }}
           files: dist/*

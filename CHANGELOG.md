@@ -7,7 +7,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ## [Non publié]
 
 ### Ajouté
-- Compilation automatique sur GitHub (`.github/workflows/build.yml`, GitHub Actions) : vérification à chaque envoi sur `main`, firmware joint aux releases (fichier unique `-complet.bin` + fichiers séparés). Script `tools/merge_bin.py` qui assemble le fichier unique à chaque build (sans jamais faire échouer la compilation). Script validé en local (build SUCCESS, fichier unique de 1,7 Mo créé, bootloader + partitions + boot_app0 + application) ; première exécution sur GitHub et flashage du fichier unique à vérifier.
+- Compilation automatique sur GitHub (`.github/workflows/build.yml`, GitHub Actions) : vérification à chaque envoi sur `main`, firmware joint aux releases (fichier unique `-complet.bin` + fichiers séparés). Script `tools/merge_bin.py` qui assemble le fichier unique à chaque build (sans jamais faire échouer la compilation). Script validé en local (build SUCCESS, fichier unique de 1,7 Mo créé, bootloader + partitions + boot_app0 + application) ; première exécution sur GitHub et flashage du fichier unique à vérifier. Le workflow peut aussi joindre les fichiers à une release déjà publiée (Run workflow avec le tag).
 
 ## [0.5.1] - 2026-11-17 (validée sauf A-07, réveil par alerte, à tester avec une impression)
 
