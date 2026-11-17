@@ -52,5 +52,5 @@ Informations de l'appareil à compléter au premier test :
 | T3-08 | Tuile en direct | État, pourcentage, couche, températures corrects par rapport à l'imprimante | Réussi | H2C |
 | T3-09 | Persistance | Après redémarrage, l'imprimante se reconnecte seule | Réussi | Alimentation débranchée puis rebranchée |
 | T3-10 | Suppression | Confirmation puis disparition de la liste et de l'accueil | Réussi |  |
-| T3-11 | Plusieurs imprimantes | Deux ou trois tuiles en direct, pas de plantage ni de ralentissement | À faire | Pas encore testé |
+| T3-11 | Plusieurs imprimantes | Deux ou trois tuiles en direct, pas de plantage ni de ralentissement | Réussi | H2C + X1C |
 | T3-12 | Fluidité de l'écran pendant la connexion | Pas de gel de l'interface | Réussi | Fluide |

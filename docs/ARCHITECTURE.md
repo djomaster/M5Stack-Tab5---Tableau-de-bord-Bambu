@@ -36,7 +36,7 @@ Les imprimantes sont configurées sur le Tab5 lui-même par un assistant (voir p
 
 ## Assistant de configuration des imprimantes
 
-Statut : réalisé en 0.3.0, à valider (T3).
+Statut : réalisé en 0.3.0, validé en 0.3.0.
 
 Parcours pour ajouter une imprimante, tout au toucher :
 
@@ -54,7 +54,7 @@ Contraintes :
 
 ## Menu Réglages
 
-Statut : menu Réglages et WiFi réalisés en 0.2.0 (validés) ; entrée Imprimantes réalisée en 0.3.0, à valider (T3).
+Statut : menu Réglages et WiFi réalisés en 0.2.0 (validés) ; entrée Imprimantes réalisée en 0.3.0, validé en 0.3.0.
 
 | Entrée | Contenu |
 |---|---|
