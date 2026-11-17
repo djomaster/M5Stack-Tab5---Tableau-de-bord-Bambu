@@ -27,10 +27,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - Test de connexion : « Connecté » puis aucune donnée reçue. Le numéro de série est maintenant converti en majuscules (le sujet MQTT distingue majuscules et minuscules), le tampon de réception passe à 64 Ko, le maximum de PubSubClient (la taille est stockée sur 16 bits : 128 Ko échouait et laissait un tampon de 256 octets, donc tous les rapports étaient ignorés) et la console série trace l'abonnement et les messages reçus pour le diagnostic.
 
 ### Limites connues
-- La recherche automatique (SSDP) n'est pas validée sur le Tab5 ; la saisie manuelle sert de secours.
+- Tests T3 : 9 sur 12 réussis sur la H2C (dont la recherche automatique et la tuile en direct) ; restent T3-04, T3-05, T3-09 et T3-11. Version non étiquetée tant qu'ils ne sont pas passés.
 - Les codes d'erreur sont affichés bruts (pas encore de traduction).
 - La compatibilité de la H2C et d'une future H3C reste à confirmer.
-- Code écrit sans compilation préalable.
 
 ## [0.2.0] - 2026-11-17
 
