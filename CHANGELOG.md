@@ -24,7 +24,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - Programme trop gros pour la table de partitions par défaut (1,4 Mo pour 1,25 Mo disponibles) : passage à la table `default_16MB.csv` (application jusqu'à 6,5 Mo). Le message « No such option: --ng » de esp-idf-size est un avertissement sans effet sur le firmware.
 
 ### Corrigé
-- Test de connexion : « Connecté » puis aucune donnée reçue. Le numéro de série est maintenant converti en majuscules (le sujet MQTT distingue majuscules et minuscules), le tampon de réception passe à 128 Ko (rapports volumineux) et la console série trace l'abonnement et les messages reçus pour le diagnostic.
+- Test de connexion : « Connecté » puis aucune donnée reçue. Le numéro de série est maintenant converti en majuscules (le sujet MQTT distingue majuscules et minuscules), le tampon de réception passe à 64 Ko, le maximum de PubSubClient (la taille est stockée sur 16 bits : 128 Ko échouait et laissait un tampon de 256 octets, donc tous les rapports étaient ignorés) et la console série trace l'abonnement et les messages reçus pour le diagnostic.
 
 ### Limites connues
 - La recherche automatique (SSDP) n'est pas validée sur le Tab5 ; la saisie manuelle sert de secours.

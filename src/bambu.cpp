@@ -44,7 +44,8 @@ struct Conn {
     mqtt.setServer(cfg.ip.c_str(), 8883);
     mqtt.setSocketTimeout(6);
     mqtt.setKeepAlive(30);
-    if (!mqtt.setBufferSize(131072)) Serial.println("MQTT : tampon de 128 Ko non alloue");
+    // PubSubClient stocke la taille sur 16 bits : 65535 octets au maximum (65536 ou plus échoue sans erreur).
+    if (!mqtt.setBufferSize(65535)) Serial.println("MQTT : tampon de 64 Ko non alloue");
     topic_report = "device/" + cfg.serial + "/report";
     topic_req = "device/" + cfg.serial + "/request";
     mqtt.setCallback([this](char *topic, uint8_t *payload, unsigned int len) {
