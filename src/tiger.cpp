@@ -369,6 +369,27 @@ static void cache_load() {
   Serial.printf("Tiger : cache charge, %u bobines\n", (unsigned)g_spools.size());
 }
 
+static std::vector<String> g_dump_names;
+static bool g_dump_done = false;
+
+// Diagnostic couleur : affiche tous les champs bruts d'une bobine dont online_color_list est vide (une seule fois par démarrage).
+static void dump_raw_docs() {
+  if (g_dump_done) return;
+  g_dump_done = true;
+  for (auto &nm : g_dump_names) {
+    if (nm.isEmpty()) continue;
+    JsonDocument filter;
+    filter.set(true);
+    JsonDocument out(&g_psram);
+    int code = http_json("https://firestore.googleapis.com/v1/" + nm, false, "", nullptr, g_id_token.c_str(), filter, out);
+    String raw;
+    serializeJson(out["fields"], raw);
+    Serial.printf("Tiger : document brut (HTTP %d, %u octets) :\n", code, (unsigned)raw.length());
+    for (size_t i = 0; i < raw.length(); i += 400) Serial.println(raw.substring(i, i + 400));
+  }
+  g_dump_names.clear();
+}
+
 static bool do_sync() {
   if (!ensure_token()) return false;
   set_state(TigerState::Syncing);
@@ -383,6 +404,7 @@ static bool do_sync() {
     JsonDocument filter;
     filter["nextPageToken"] = true;
     filter["error"]["message"] = true;
+    filter["documents"][0]["name"] = true;
     for (const char *k : {"uid", "tag_uid", "twin_uid", "id_brand", "id_material", "color_name", "online_color_list",
                           "weight_available", "capacity", "deleted"})
       filter["documents"][0]["fields"][k] = true;
@@ -425,6 +447,7 @@ static bool do_sync() {
           String raw;
           serializeJson(colors, raw);
           auto br = g_brands.find(s.brand);
+          if (colors.isNull() && g_dump_names.size() < 2) g_dump_names.push_back(String((const char *)(d["name"] | "")));
           Serial.printf("Tiger : couleur HIPS %s / %s : online_color_list=%s -> %06X\n", br != g_brands.end() ? br->second.c_str() : "?",
                         s.color_name.c_str(), raw.c_str(), (unsigned)s.color);
         }
@@ -453,6 +476,7 @@ static bool do_sync() {
   if (changed) cache_save(g_spools);
   g_last_sync = millis();
   Serial.printf("Tiger : %u bobines synchronisees\n", (unsigned)g_spools.size());
+  dump_raw_docs();
   set_state(TigerState::Ready);
   return true;
 }
