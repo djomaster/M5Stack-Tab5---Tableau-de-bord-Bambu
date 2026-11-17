@@ -46,7 +46,7 @@ Informations de l'appareil à compléter au premier test :
 | T3-02 | Démarrage sans imprimante | Accueil avec une tuile « Ajouter une imprimante », pas de plantage | Réussi |  |
 | T3-03 | Recherche automatique (SSDP) | L'imprimante apparaît dans la liste de l'étape 1 | Réussi | Recherche automatique OK (H2C) |
 | T3-04 | Saisie manuelle | IP, série (Verr. Maj) et code saisis sans erreur | À faire | Non testé |
-| T3-05 | Mauvais code d'accès | Message « Code d'accès refusé » | À faire | Non testé |
+| T3-05 | Mauvais code d'accès | Message « Code d'accès refusé » | Réussi | |
 | T3-06 | Bon code d'accès | « Connexion réussie » et bouton Suivant actif | Réussi | H2C ; nécessitait le tampon MQTT de 65535 octets |
 | T3-07 | Nom et enregistrement | L'imprimante apparaît dans Réglages > Imprimantes | Réussi |  |
 | T3-08 | Tuile en direct | État, pourcentage, couche, températures corrects par rapport à l'imprimante | Réussi | H2C |
