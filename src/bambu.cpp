@@ -159,6 +159,13 @@ struct Conn {
     }
     if (now < next_try) return;
     set_link(Link::Connecting);
+    if (!tls_memory_ok(45000)) {
+      Serial.printf("MQTT : memoire interne insuffisante pour %s (bloc max %u), nouvel essai dans 8 s\n", cfg.ip.c_str(),
+                    (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
+      set_link(Link::Connecting);
+      next_try = millis() + 8000;
+      return;
+    }
     {
       // Sondage TCP court : une imprimante éteinte ne doit pas bloquer la tâche 30 s (délai par défaut)
       WiFiClient probe;

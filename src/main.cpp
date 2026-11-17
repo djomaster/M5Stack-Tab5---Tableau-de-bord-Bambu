@@ -31,9 +31,14 @@ void setup() {
   wifi_begin();
   bambu_start();
   tiger_begin();  // crée le verrou et la tâche réseau avant que l'interface ne les interroge
+  log_memory("avant interface");
+  // Pendant la construction de l'interface, les allocations de plus de 256 octets vont en PSRAM : les objets LVGL
+  // (centaines de boutons du clavier, étiquettes, styles) ne mangent plus la mémoire interne, réservée au WiFi et à TLS.
+  heap_caps_malloc_extmem_enable(256);
   display_port_init();
   fonts_init();
   ui_init();
+  heap_caps_malloc_extmem_enable(16384);  // retour au réglage normal (seuil de 16 Ko)
   log_memory("demarrage");
 }
 
