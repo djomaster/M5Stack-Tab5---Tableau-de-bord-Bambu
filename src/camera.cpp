@@ -20,7 +20,8 @@ static String g_last_line;
 
 static const uint16_t RTSP_PORT = 322;
 static const uint32_t PLAY_MS = 8000;
-static const uint32_t VIEW_PERIOD_MS = 2000;  // une image decodee toutes les 2 s
+static const uint32_t VIEW_PERIOD_MS = 1000;  // une image decodee par seconde (une image cle par seconde dans le flux)
+static const uint32_t VIEW_TOLERANCE_MS = 150;  // gigue de l'arrivee des images cles
 static const int VIEW_MAXW = 900, VIEW_MAXH = 560;
 
 // ---------------------------------------------------------------- compte rendu
@@ -262,7 +263,11 @@ static void nal_complete(const uint8_t *nal, size_t len) {
   if (g_view && t == 5) {
     // En mode image en direct, une image cle sur deux seulement est decodee (periode VIEW_PERIOD_MS).
     Bits b{nal + 1, len - 1 > 16 ? 16 : len - 1};
-    if (b.ue() == 0) g_want = (millis() - g_last_pic_ms) >= VIEW_PERIOD_MS;
+    if (b.ue() == 0) {
+      // le delai se mesure entre les DEBUTS de decodage : le decodage dure ~0,8 a 1 s
+      g_want = (millis() - g_last_pic_ms) >= VIEW_PERIOD_MS - VIEW_TOLERANCE_MS;
+      if (g_want) g_last_pic_ms = millis();
+    }
     if (!g_want) return;
   }
   int64_t t0 = esp_timer_get_time();
@@ -281,7 +286,6 @@ static void nal_complete(const uint8_t *nal, size_t len) {
       if (g_view) {
         view_publish();
         g_vms = ms;
-        g_last_pic_ms = millis();
         g_want = false;
       } else {
         g_pic_ms[g_pics++] = ms;
@@ -670,7 +674,7 @@ static void run_probe(const PrinterCfg &cfg) {
   uint32_t t_start = millis(), t_rx = t_start;
   g_last_pic_ms = t_start - VIEW_PERIOD_MS;
   g_want = false;
-  if (g_view) rep("En direct : une image toutes les %u s", (unsigned)(VIEW_PERIOD_MS / 1000));
+  if (g_view) rep("En direct : une image toutes les %u ms", (unsigned)VIEW_PERIOD_MS);
   while (g_view ? !g_stop : (millis() - t_start < PLAY_MS)) {
     if (c.available() <= 0) {
       if (!c.connected()) break;
