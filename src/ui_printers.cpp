@@ -198,6 +198,7 @@ static void ev_test(lv_event_t *) {
   PrinterCfg c;
   c.ip = ta_text(wz_ip);
   c.serial = ta_text(wz_sn);
+  c.serial.toUpperCase();
   c.code = ta_text(wz_code);
   c.name = "test";
   if (c.ip.isEmpty() || c.serial.isEmpty() || c.code.isEmpty()) {
@@ -227,6 +228,7 @@ static void ev_save(lv_event_t *) {
   if (c.name.isEmpty()) c.name = "Imprimante " + String(printers_count() + 1);
   c.ip = ta_text(wz_ip);
   c.serial = ta_text(wz_sn);
+  c.serial.toUpperCase();
   c.code = ta_text(wz_code);
   if (!printers_add(c)) {
     toast("Imprimante déjà enregistrée ou maximum atteint");

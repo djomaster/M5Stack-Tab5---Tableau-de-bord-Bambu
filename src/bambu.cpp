@@ -32,16 +32,26 @@ struct Conn {
   uint32_t started = 0;
   String topic_report, topic_req;
 
+  int msg_count = 0;
+
   explicit Conn(const PrinterCfg &c) : cfg(c), mqtt(net) {
+    // Le numéro de série est en majuscules ; les sujets MQTT distinguent majuscules et minuscules.
+    cfg.serial.trim();
+    cfg.serial.toUpperCase();
+    cfg.ip.trim();
     net.setInsecure();
     net.setTimeout(6);
     mqtt.setServer(cfg.ip.c_str(), 8883);
     mqtt.setSocketTimeout(6);
     mqtt.setKeepAlive(30);
-    if (!mqtt.setBufferSize(65536)) Serial.println("MQTT : tampon de 64 Ko non alloue");
+    if (!mqtt.setBufferSize(131072)) Serial.println("MQTT : tampon de 128 Ko non alloue");
     topic_report = "device/" + cfg.serial + "/report";
     topic_req = "device/" + cfg.serial + "/request";
-    mqtt.setCallback([this](char *, uint8_t *payload, unsigned int len) { on_message(payload, len); });
+    mqtt.setCallback([this](char *topic, uint8_t *payload, unsigned int len) {
+      if (msg_count < 3) Serial.printf("MQTT %s : message %u octets sur %s\n", cfg.ip.c_str(), len, topic);
+      msg_count++;
+      on_message(payload, len);
+    });
     started = millis();
   }
 
@@ -53,7 +63,10 @@ struct Conn {
   void on_message(uint8_t *payload, unsigned int len) {
     JsonDocument doc;
     DeserializationError err = deserializeJson(doc, payload, len, DeserializationOption::Filter(g_filter));
-    if (err) return;
+    if (err) {
+      Serial.printf("MQTT : JSON illisible (%s)\n", err.c_str());
+      return;
+    }
     JsonObject p = doc["print"];
     if (p.isNull()) return;
     Lock lk;
@@ -87,8 +100,9 @@ struct Conn {
     String cid = "tab5-" + String((uint32_t)esp_random(), HEX);
     bool ok = mqtt.connect(cid.c_str(), "bblp", cfg.code.c_str());
     if (ok) {
-      mqtt.subscribe(topic_report.c_str());
-      mqtt.publish(topic_req.c_str(), "{\"pushing\":{\"sequence_id\":\"1\",\"command\":\"pushall\"}}");
+      bool sub_ok = mqtt.subscribe(topic_report.c_str());
+      bool pub_ok = mqtt.publish(topic_req.c_str(), "{\"pushing\":{\"sequence_id\":\"1\",\"command\":\"pushall\"}}");
+      Serial.printf("MQTT : abonnement %s (%s) = %d, pushall = %d\n", topic_report.c_str(), cfg.ip.c_str(), sub_ok, pub_ok);
       set_link(Link::Connected);
       Serial.printf("MQTT : connecte a %s\n", cfg.ip.c_str());
     } else {
