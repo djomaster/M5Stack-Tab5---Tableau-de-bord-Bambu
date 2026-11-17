@@ -25,5 +25,6 @@ Chaque décision structurante est notée ici avec sa date et sa raison, pour ne 
 | D-019 | 2026-11-17 | Inventaire et noms de marques/matières mis en cache dans LittleFS (`/tiger.tsv`) | L'inventaire doit réapparaître au démarrage, hors ligne | Actée, validée (T5-10) |
 | D-020 | 2026-11-17 | Les 16 dernières étapes du programme sont gardées en mémoire RTC et affichées après un plantage | Diagnostiquer les redémarrages watchdog sans débogueur | Actée |
 | D-021 | 2026-11-17 | SSID et IP du WiFi lus une seule fois à la connexion | Le WiFi du P4 passe par un coprocesseur (SDIO) ; éviter les échanges inutiles chaque seconde | Actée, effet sur les watchdog à confirmer |
-| D-022 | 2026-11-17 | Caméra reportée à une date indéterminée | Demande de l'utilisateur | Actée |
+| D-022 | 2026-11-17 | Caméra reportée à une date indéterminée | Demande de l'utilisateur | Remplacée par D-024 (même jour) |
 | D-023 | 2026-11-17 | Compilation et publication du firmware par GitHub Actions ; fichier unique fusionné à flasher à l'adresse 0x0 | Permet d'obtenir un firmware sans installer PlatformIO | À valider (première exécution) |
+| D-024 | 2026-11-17 | Caméra reprise : d'abord une sonde de diagnostic (RTSPS port 322, bouton « Caméra » du détail d'une imprimante) qui lit le profil H.264, le CABAC, les images B et la cadence, avant d'écrire l'affichage | Le P4 n'a pas de décodeur H.264 matériel ; le décodeur logiciel esp_h264 ne gère que le profil « constrained baseline » ; le profil réel des flux Bambu est inconnu | Actée, sonde à tester (C-01 à C-04) |

@@ -111,3 +111,15 @@ Informations de l'appareil à compléter au premier test :
 | A-05 | Extinction | Avec « après 1 min » : après une minute sans toucher, l'écran s'éteint ; le premier toucher le rallume à la luminosité choisie sans actionner de bouton | OK | v1 : atténuation, remplacée par l'extinction (demande utilisateur) |
 | A-06 | Extinction et impression | L'écran éteint continue de se mettre à jour (pas de gel) | OK | |
 | A-07 | Réveil par alerte | Écran éteint (extinction réglée) : à la fin d'une impression ou à l'apparition d'une erreur, l'écran se rallume tout seul | À faire | À tester avec une vraie impression, en même temps que T4-09 et T4-10 |
+
+## Tests Caméra (étape 6, sonde)
+
+Prérequis : « LAN Mode Liveview » activé sur l'imprimante testée.
+
+| N° | Test | Résultat attendu | État | Notes |
+|---|---|---|---|---|
+| C-01 | X1C | Détail > « Caméra » : la fenêtre affiche connexion TLS, DESCRIBE 200, profil H.264, résolution, cadence et un verdict | À faire | Noter le texte complet affiché |
+| C-02 | H2C | Même test sur la H2C | À faire | |
+| C-03 | Reprise MQTT | Après la sonde (« Fin de la sonde »), les deux imprimantes repassent « en ligne » sans redémarrage | À faire | |
+| C-04 | Mémoire | Le journal série affiche « Memoire interne apres » proche de la valeur d'avant | À faire | |
+| C-05 | Mauvais état | LAN Mode Liveview désactivé : message d'échec clair, pas de plantage | À faire | |

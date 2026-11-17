@@ -2,6 +2,7 @@
 #include <lvgl.h>
 #include "alerts.h"
 #include "bambu.h"
+#include "camera.h"
 #include "fonts.h"
 #include "printers.h"
 #include "tiger.h"
@@ -140,6 +141,49 @@ static void detail_tick(lv_timer_t *) {
   }
 }
 
+// Sonde caméra (étape 6) : fenêtre de résultats au-dessus de l'écran.
+static lv_obj_t *cam_ov = nullptr, *cam_txt = nullptr;
+static lv_timer_t *cam_tm = nullptr;
+static String cam_last;
+
+static void cam_refresh(lv_timer_t *) {
+  String r = camera_probe_report();
+  if (r != cam_last && cam_txt) {
+    cam_last = r;
+    lv_label_set_text(cam_txt, r.c_str());
+  }
+}
+
+static void ev_cam_close(lv_event_t *) {
+  if (cam_tm) lv_timer_delete(cam_tm);
+  cam_tm = nullptr;
+  if (cam_ov) lv_obj_delete(cam_ov);
+  cam_ov = nullptr;
+  cam_txt = nullptr;
+}
+
+static void ev_cam_open(lv_event_t *) {
+  if (cam_ov || camera_probe_running()) return;
+  camera_probe_start(printers_get(d_idx));
+  cam_last = "";
+  cam_ov = lv_obj_create(lv_layer_top());
+  lv_obj_set_size(cam_ov, LV_PCT(100), LV_PCT(100));
+  lv_obj_set_style_bg_color(cam_ov, col(C_BG), 0);
+  lv_obj_set_style_bg_opa(cam_ov, LV_OPA_COVER, 0);
+  lv_obj_set_style_border_width(cam_ov, 0, 0);
+  lv_obj_set_style_radius(cam_ov, 0, 0);
+  lv_obj_clear_flag(cam_ov, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_t *t = mk_label(cam_ov, "Test caméra (diagnostic du flux)", FB28, C_TEXT);
+  lv_obj_set_pos(t, 30, 20);
+  cam_txt = mk_label(cam_ov, "Démarrage...", F18, C_TEXT);
+  lv_obj_set_width(cam_txt, 1200);
+  lv_label_set_long_mode(cam_txt, LV_LABEL_LONG_WRAP);
+  lv_obj_set_pos(cam_txt, 30, 80);
+  lv_obj_t *b = mk_button(cam_ov, "Fermer", 200, 60, C_CARD2, C_TEXT, F20, ev_cam_close, nullptr);
+  lv_obj_set_pos(b, 1040, 630);
+  cam_tm = lv_timer_create(cam_refresh, 500, nullptr);
+}
+
 void detail_open(int printer_index) {
   d_idx = printer_index;
   d_ams_sig = "";
@@ -213,9 +257,10 @@ void ui_detail_build() {
   lv_obj_t *left = mk_card(p.body, 540, 520, C_LINE2);
   lv_obj_set_pos(left, 24, 24);
   d_name = mk_label(left, "", FB28, C_TEXT);
-  lv_obj_set_width(d_name, 490);
+  lv_obj_set_width(d_name, 330);
   lv_label_set_long_mode(d_name, LV_LABEL_LONG_DOT);
   lv_obj_set_pos(d_name, 24, 20);
+  lv_obj_set_pos(mk_button(left, "Caméra", 130, 48, C_CARD2, C_TEXT, F18, ev_cam_open, nullptr), 380, 16);
   d_status = mk_label(left, "", F20, C_MUTED);
   lv_obj_set_pos(d_status, 24, 70);
   d_pct = mk_label(left, "-", FB28, C_TEXT);
