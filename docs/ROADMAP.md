@@ -5,7 +5,7 @@ Statuts : À faire · En cours · À valider (code écrit, pas testé sur l'appa
 | Étape | Contenu | Version visée | Statut |
 |---|---|---|---|
 | 1 | Squelette, test matériel : écran, tactile, batterie, WiFi | 0.1.2 | Terminé |
-| 2 | LVGL, assistant de configuration des imprimantes, MQTT, tuile en direct, puis les autres | 0.2.0 | À faire |
+| 2 | LVGL, menu Réglages (WiFi, imprimantes), assistant de configuration, MQTT, tuile en direct, puis les autres | 0.2.0 | À faire |
 | 3 | Vue détaillée, AMS, alertes sonores | 0.3.0 | À faire |
 | 4 | Inventaire Tiger Studio | 0.4.0 | À faire |
 | 5 | Caméra | 0.5.0 | À faire |
@@ -24,7 +24,6 @@ Statuts : À faire · En cours · À valider (code écrit, pas testé sur l'appa
 
 ## Points ouverts
 
-- Assistant de configuration : inclure aussi le WiFi (remplacerait `src/config.h`) ?
 - Découverte automatique des imprimantes : à valider sur X1C, H2C et H3C.
 - Modèle exact et compatibilité mode LAN de la H3C.
 - Adresse de l'API Tiger Studio à utiliser pour l'inventaire.

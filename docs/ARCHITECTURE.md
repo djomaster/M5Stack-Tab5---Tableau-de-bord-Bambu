@@ -49,8 +49,22 @@ Parcours pour ajouter une imprimante, tout au toucher :
 Contraintes :
 - Le code d'accès est saisi masqué et jamais écrit dans les journaux série.
 - Il est stocké dans la mémoire interne du Tab5 (en clair, comme sur l'imprimante) : quiconque a l'appareil en main peut le retrouver. À noter dans les réglages de sécurité.
-- Un assistant identique doit permettre de configurer le WiFi (à confirmer, voir `ROADMAP.md`).
+- Le WiFi se configure aussi à l'écran, dans le menu Réglages (voir plus bas). `src/config.h` disparaît du projet.
 - La découverte automatique reste à valider sur les trois modèles ; la saisie manuelle est toujours disponible.
+
+## Menu Réglages
+
+Statut : prévu pour l'étape 2, non réalisé.
+
+| Entrée | Contenu |
+|---|---|
+| WiFi | Liste des réseaux détectés, saisie du mot de passe au clavier à l'écran, état de la connexion et adresse IP, oubli du réseau enregistré |
+| Imprimantes | Liste des imprimantes configurées, ajout (assistant), modification, suppression |
+| Alertes | Sons et événements à signaler (fin d'impression, erreur, filament vide) |
+| Affichage | Luminosité et mise en veille de l'écran |
+| À propos | Version du firmware, adresse IP, mémoire libre, niveau de batterie |
+
+Le premier démarrage, sans WiFi enregistré, ouvre directement l'écran WiFi puis l'assistant d'ajout d'imprimante. Le mot de passe WiFi est stocké dans la mémoire interne du Tab5, avec les mêmes limites que les codes d'accès des imprimantes.
 
 ## Hors périmètre
 
