@@ -1,6 +1,6 @@
 # Architecture
 
-Statut : cible visée. Seule l'étape 1 (test matériel) existe dans le code. Voir `ROADMAP.md`.
+Statut : étapes 1 et 2 validées (0.2.0) ; étape 3 (assistant, MQTT, tuiles en direct) écrite en 0.3.0, à valider. Voir `ROADMAP.md`.
 
 ## Objectif
 
@@ -36,7 +36,7 @@ Les imprimantes sont configurées sur le Tab5 lui-même par un assistant (voir p
 
 ## Assistant de configuration des imprimantes
 
-Statut : prévu pour l'étape 2, non réalisé.
+Statut : réalisé en 0.3.0, à valider (T3).
 
 Parcours pour ajouter une imprimante, tout au toucher :
 
@@ -54,7 +54,7 @@ Contraintes :
 
 ## Menu Réglages
 
-Statut : prévu pour l'étape 2, non réalisé.
+Statut : menu Réglages et WiFi réalisés en 0.2.0 (validés) ; entrée Imprimantes réalisée en 0.3.0, à valider (T3).
 
 | Entrée | Contenu |
 |---|---|

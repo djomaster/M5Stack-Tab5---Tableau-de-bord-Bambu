@@ -6,6 +6,26 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
+## [0.3.0] - 2026-11-17 (à valider sur l'appareil, voir T3 dans `docs/TESTS.md`)
+
+### Ajouté
+- Assistant d'ajout d'imprimante en 3 étapes : recherche sur le réseau (annonces SSDP) ou saisie manuelle, adresse IP + numéro de série + code d'accès LAN avec test de connexion, puis nom (D-011).
+- Écran Réglages > Imprimantes : liste, état de connexion, suppression avec confirmation. Maximum 3 imprimantes.
+- Connexion MQTT (TLS, port 8883) à chaque imprimante dans une tâche réseau séparée ; lecture de l'état d'impression (état, pourcentage, temps restant, couche, températures, fichier, code d'erreur).
+- Accueil : une tuile en direct par imprimante, à la place des données d'exemple.
+- Les imprimantes (dont le code d'accès) sont enregistrées dans la mémoire de l'appareil, jamais dans le code ni dans git.
+
+### Modifié
+- Découpage de l'interface : `ui_common` (composants, clavier), `ui` (accueil, réglages, WiFi), `ui_printers` (liste, assistant).
+- Clavier : ajout de « Verr. Maj » (majuscules continues, utile pour le numéro de série) et « Vider ».
+- Nouvelles dépendances : PubSubClient 2.8, ArduinoJson 7.
+
+### Limites connues
+- La recherche automatique (SSDP) n'est pas validée sur le Tab5 ; la saisie manuelle sert de secours.
+- Les codes d'erreur sont affichés bruts (pas encore de traduction).
+- La compatibilité de la H2C et d'une future H3C reste à confirmer.
+- Code écrit sans compilation préalable.
+
 ## [0.2.0] - 2026-11-17
 
 Validée sur le Tab5 : tests T2-01 à T2-10 réussis (`docs/TESTS.md`).

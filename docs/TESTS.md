@@ -35,3 +35,22 @@ Informations de l'appareil à compléter au premier test :
 | T2-08 | Saisie et connexion | Mot de passe saisi (Maj, Afficher), connexion, adresse IP affichée | Réussi | |
 | T2-09 | Persistance | Après redémarrage, reconnexion automatique, écran d'accueil | Réussi | |
 | T2-10 | Fluidité | Pas de saccade visible au défilement et à la saisie | Réussi | |
+
+## Étape 3 - version 0.3.0
+
+À exécuter par l'utilisateur sur le Tab5, avec au moins une imprimante allumée en mode LAN. Notez le modèle et la version du firmware de l'imprimante dans la colonne Notes.
+
+| N° | Test | Résultat attendu | Statut | Notes |
+|---|---|---|---|---|
+| T3-01 | Compilation (nouvelles bibliothèques) | « SUCCESS » | À faire | |
+| T3-02 | Démarrage sans imprimante | Accueil avec une tuile « Ajouter une imprimante », pas de plantage | À faire | |
+| T3-03 | Recherche automatique (SSDP) | L'imprimante apparaît dans la liste de l'étape 1 | À faire | Si non : noter, utiliser la saisie manuelle |
+| T3-04 | Saisie manuelle | IP, série (Verr. Maj) et code saisis sans erreur | À faire | |
+| T3-05 | Mauvais code d'accès | Message « Code d'accès refusé » | À faire | |
+| T3-06 | Bon code d'accès | « Connexion réussie » et bouton Suivant actif | À faire | |
+| T3-07 | Nom et enregistrement | L'imprimante apparaît dans Réglages > Imprimantes | À faire | |
+| T3-08 | Tuile en direct | État, pourcentage, couche, températures corrects par rapport à l'imprimante | À faire | |
+| T3-09 | Persistance | Après redémarrage, l'imprimante se reconnecte seule | À faire | |
+| T3-10 | Suppression | Confirmation puis disparition de la liste et de l'accueil | À faire | |
+| T3-11 | Plusieurs imprimantes | Deux ou trois tuiles en direct, pas de plantage ni de ralentissement | À faire | Relever la mémoire libre si possible |
+| T3-12 | Fluidité de l'écran pendant la connexion | Pas de gel de l'interface | À faire | |
