@@ -118,8 +118,8 @@ Prérequis : « LAN Mode Liveview » activé sur l'imprimante testée.
 
 | N° | Test | Résultat attendu | État | Notes |
 |---|---|---|---|---|
-| C-01 | X1C | Détail > « Caméra » : la fenêtre affiche connexion TLS, DESCRIBE 200, profil H.264, résolution, cadence et un verdict | À faire | Noter le texte complet affiché |
-| C-02 | H2C | Même test sur la H2C | À faire | |
-| C-03 | Reprise MQTT | Après la sonde (« Fin de la sonde »), les deux imprimantes repassent « en ligne » sans redémarrage | À faire | |
-| C-04 | Mémoire | Le journal série affiche « Memoire interne apres » proche de la valeur d'avant | À faire | |
+| C-01 | X1C | Détail > « Caméra » : la fenêtre affiche connexion TLS, DESCRIBE 200, profil H.264, résolution, cadence et un verdict | OK | Flux lu : High 4.1, CABAC, 30 images/s, ≈1760x1080 (largeur à vérifier), 120 Ko/s, 0 perte. Verdict : incompatible avec esp_h264 |
+| C-02 | H2C | Même test sur la H2C | OK | Flux lu : High 4.1, CABAC, 30 images/s, ≈1680x1080 (largeur à vérifier), 160 Ko/s, 0 perte. Verdict : incompatible avec esp_h264 |
+| C-03 | Reprise MQTT | Après la sonde (« Fin de la sonde »), les deux imprimantes repassent « en ligne » sans redémarrage | OK | Les deux imprimantes se reconnectent ; une tentative échoue (rc=-4, 9 s) juste après la sonde |
+| C-04 | Mémoire | Le journal série affiche « Memoire interne apres » proche de la valeur d'avant | OK | Bloc interne max identique avant et après (212 980 octets) |
 | C-05 | Mauvais état | LAN Mode Liveview désactivé : message d'échec clair, pas de plantage | À faire | |
