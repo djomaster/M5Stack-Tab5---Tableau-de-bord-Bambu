@@ -170,6 +170,7 @@ static void build_about() {
 
 // ---------- WiFi ----------
 static lv_obj_t *wifi_list, *wifi_status, *wifi_sel_label, *wifi_ta, *wifi_body;
+static lv_obj_t *wifi_scan_btn, *wifi_hint, *wifi_show_btn, *wifi_cn_btn, *wifi_other_btn;
 static bool g_show_pw = false;
 static String g_sel_ssid;
 static bool g_scanning = false;
@@ -188,6 +189,8 @@ static void ev_connect(lv_event_t *) {
   wifi_connect(g_sel_ssid, String(lv_textarea_get_text(wifi_ta)));
 }
 
+static void set_wifi_mode(bool pw);
+
 static void ev_pick_net(lv_event_t *e) {
   lv_obj_t *b = (lv_obj_t *)lv_event_get_target(e);
   const char *ssid = (const char *)lv_obj_get_user_data(b);
@@ -195,6 +198,7 @@ static void ev_pick_net(lv_event_t *e) {
   char buf[96];
   snprintf(buf, sizeof(buf), "Réseau : %s", ssid);
   lv_label_set_text(wifi_sel_label, buf);
+  set_wifi_mode(true);
 }
 
 static void fill_net_list(const std::vector<WifiNet> &nets) {
@@ -238,11 +242,37 @@ static void scan_tick(lv_timer_t *) {
   }
 }
 
+static void ev_other_net(lv_event_t *) { set_wifi_mode(false); }
+
 static void ev_go_wifi(lv_event_t *) {
-  kb_attach(wifi_body, 500, 124);
-  kb_set_target(wifi_ta);
+  set_wifi_mode(false);
   go(scr_wifi);
   start_scan();
+}
+
+static void set_wifi_mode(bool pw) {
+  auto show = [](lv_obj_t *o, bool on) {
+    if (on) lv_obj_remove_flag(o, LV_OBJ_FLAG_HIDDEN);
+    else lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
+  };
+  show(wifi_scan_btn, !pw);
+  show(wifi_list, !pw);
+  show(wifi_hint, !pw);
+  show(wifi_sel_label, pw);
+  show(wifi_ta, pw);
+  show(wifi_show_btn, pw);
+  show(wifi_cn_btn, pw);
+  show(wifi_other_btn, pw);
+  if (pw) {
+    lv_obj_set_pos(wifi_status, 24, 120);
+    lv_obj_set_width(wifi_status, 1232);
+    kb_attach(wifi_body, 0, KB_Y);
+    kb_set_target(wifi_ta);
+  } else {
+    lv_obj_set_pos(wifi_status, 240, 22);
+    lv_obj_set_width(wifi_status, 220);
+    kb_hide();
+  }
 }
 
 static void build_wifi() {
@@ -250,8 +280,9 @@ static void build_wifi() {
   scr_wifi = p.scr;
   wifi_body = p.body;
 
-  lv_obj_t *scan = mk_button(p.body, "Rechercher", 200, 48, C_CARD2, C_TEXT, F18, ev_scan);
-  lv_obj_set_pos(scan, 24, 12);
+  // Mode « liste » : choix du réseau
+  wifi_scan_btn = mk_button(p.body, "Rechercher", 200, 48, C_CARD2, C_TEXT, F18, ev_scan);
+  lv_obj_set_pos(wifi_scan_btn, 24, 12);
   wifi_status = mk_label(p.body, "", F18, C_MUTED);
   lv_obj_set_pos(wifi_status, 240, 22);
   lv_obj_set_width(wifi_status, 220);
@@ -266,23 +297,29 @@ static void build_wifi() {
   lv_obj_add_flag(wifi_list, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_set_scroll_dir(wifi_list, LV_DIR_VER);
 
+  wifi_hint = mk_label(p.body, "Touchez un réseau pour saisir son mot de passe.", F20, C_MUTED);
+  lv_obj_set_pos(wifi_hint, 500, 90);
+
+  // Mode « mot de passe » : champ en haut, clavier pleine largeur en bas
   wifi_sel_label = mk_label(p.body, "Réseau : (aucun)", FB20, C_TEXT);
-  lv_obj_set_pos(wifi_sel_label, 500, 14);
+  lv_obj_set_pos(wifi_sel_label, 24, 10);
 
   wifi_ta = lv_textarea_create(p.body);
   style_ta(wifi_ta);
   lv_textarea_set_password_mode(wifi_ta, true);
   lv_textarea_set_placeholder_text(wifi_ta, "Mot de passe");
-  lv_obj_set_size(wifi_ta, 560, 56);
-  lv_obj_set_pos(wifi_ta, 500, 52);
+  lv_obj_set_size(wifi_ta, 600, 56);
+  lv_obj_set_pos(wifi_ta, 24, 48);
 
-  lv_obj_t *show = mk_button(p.body, "Afficher", 190, 56, C_CARD2, C_TEXT, F18, ev_show);
-  lv_obj_set_pos(show, 1076, 52);
+  wifi_show_btn = mk_button(p.body, "Afficher", 170, 56, C_CARD2, C_TEXT, F18, ev_show);
+  lv_obj_set_pos(wifi_show_btn, 636, 48);
+  wifi_cn_btn = mk_button(p.body, "Se connecter", 270, 56, C_ACC, C_ON_ACC, FB20, ev_connect);
+  lv_obj_set_pos(wifi_cn_btn, 818, 48);
+  wifi_other_btn = mk_button(p.body, "Autre réseau", 170, 56, C_CARD2, C_TEXT, F18, ev_other_net);
+  lv_obj_set_pos(wifi_other_btn, 1100, 48);
 
-  kb_build(p.body, 500, 124);
-
-  lv_obj_t *cn = mk_button(p.body, "Se connecter", 400, 64, C_ACC, C_ON_ACC, FB20, ev_connect);
-  lv_obj_set_pos(cn, 500, 480);
+  kb_build(p.body, 0, KB_Y);
+  set_wifi_mode(false);
 
   lv_timer_create(scan_tick, 400, nullptr);
 }

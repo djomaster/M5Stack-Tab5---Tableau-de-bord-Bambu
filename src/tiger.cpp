@@ -101,7 +101,9 @@ static int http_json_locked(const String &url, bool post, const String &body, co
                   (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL), (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
   }
   if (code > 0) {
-    DeserializationError e = deserializeJson(out, http.getStream(), DeserializationOption::Filter(filter));
+    // Corps lu en entier (en mémoire externe) avant l'analyse : la lecture directe du flux était tronquée (IncompleteInput)
+    String payload = http.getString();
+    DeserializationError e = deserializeJson(out, payload, DeserializationOption::Filter(filter));
     if (e) Serial.printf("Tiger : JSON illisible (%s) pour %s\n", e.c_str(), url.substring(0, 60).c_str());
   }
   http.end();

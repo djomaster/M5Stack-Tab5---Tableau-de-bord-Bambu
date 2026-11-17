@@ -84,7 +84,7 @@ static void list_tick(lv_timer_t *) {
 //  Assistant d'ajout
 // =====================================================================
 static lv_obj_t *wz_step[3];
-static lv_obj_t *wz_kbbox, *wz_head, *wz_disc_list, *wz_disc_hint;
+static lv_obj_t *wz_body, *wz_head, *wz_disc_list, *wz_disc_hint;
 static lv_obj_t *wz_ip, *wz_sn, *wz_code, *wz_name, *wz_test_status, *wz_next;
 static std::vector<lv_obj_t *> wz_fields;
 static int wz_cur = 0;
@@ -106,13 +106,13 @@ static void focus_field(lv_obj_t *ta) {
 
 static void ev_field(lv_event_t *e) { focus_field((lv_obj_t *)lv_event_get_target(e)); }
 
-static lv_obj_t *mk_field(lv_obj_t *parent, const char *label, int y, const char *placeholder) {
-  lv_obj_set_pos(mk_label(parent, label, F18, C_MUTED), 24, y);
+static lv_obj_t *mk_field(lv_obj_t *parent, const char *label, int x, int y, int w, const char *placeholder) {
+  lv_obj_set_pos(mk_label(parent, label, F18, C_MUTED), x, y);
   lv_obj_t *ta = lv_textarea_create(parent);
   style_ta(ta);
   lv_textarea_set_placeholder_text(ta, placeholder);
-  lv_obj_set_size(ta, 440, 52);
-  lv_obj_set_pos(ta, 24, y + 28);
+  lv_obj_set_size(ta, w, 50);
+  lv_obj_set_pos(ta, x, y + 26);
   lv_obj_add_event_cb(ta, ev_field, LV_EVENT_CLICKED, nullptr);
   wz_fields.push_back(ta);
   return ta;
@@ -124,11 +124,8 @@ static void show_step(int n) {
     if (i == n) lv_obj_remove_flag(wz_step[i], LV_OBJ_FLAG_HIDDEN);
     else lv_obj_add_flag(wz_step[i], LV_OBJ_FLAG_HIDDEN);
   }
-  if (n == 0) lv_obj_add_flag(wz_kbbox, LV_OBJ_FLAG_HIDDEN);
-  else {
-    lv_obj_remove_flag(wz_kbbox, LV_OBJ_FLAG_HIDDEN);
-    kb_attach(wz_kbbox, 0, 0);
-  }
+  if (n == 0) kb_hide();
+  else kb_attach(wz_body, 0, KB_Y);
   static const char *titles[3] = {"Étape 1 sur 3 : recherche de l'imprimante", "Étape 2 sur 3 : identifiants et test",
                                   "Étape 3 sur 3 : nom de l'imprimante"};
   lv_label_set_text(wz_head, titles[n]);
@@ -317,37 +314,34 @@ static void build_wizard() {
   lv_obj_set_pos(man, 24, 400);
   lv_obj_set_pos(mk_label(wz_step[0], "L'imprimante doit être allumée, sur le même réseau WiFi, avec le mode LAN activé.", F16, C_MUTED), 24, 474);
 
-  // Étape 2 : identifiants + test
-  wz_step[1] = mk_step(p.body, 490);
-  wz_ip = mk_field(wz_step[1], "Adresse IP", 0, "192.168.1.50");
-  wz_sn = mk_field(wz_step[1], "Numéro de série", 92, "ex. 00M09A...");
-  wz_code = mk_field(wz_step[1], "Code d'accès LAN (8 caractères)", 184, "code affiché sur l'imprimante");
-  lv_obj_t *tst = mk_button(wz_step[1], "Tester la connexion", 440, 56, C_CARD2, C_TEXT, FB20, ev_test);
-  lv_obj_set_pos(tst, 24, 292);
+  // Étape 2 : identifiants + test (champs en haut, clavier pleine largeur en bas)
+  wz_step[1] = mk_step(p.body, SCR_W);
+  wz_ip = mk_field(wz_step[1], "Adresse IP", 24, 0, 340, "192.168.1.50");
+  wz_sn = mk_field(wz_step[1], "Numéro de série", 380, 0, 400, "ex. 00M09A...");
+  wz_code = mk_field(wz_step[1], "Code d'accès LAN (8 caractères)", 796, 0, 460, "code affiché sur l'imprimante");
+  lv_obj_t *tst = mk_button(wz_step[1], "Tester la connexion", 330, 54, C_CARD2, C_TEXT, FB20, ev_test);
+  lv_obj_set_pos(tst, 24, 88);
   wz_test_status = mk_label(wz_step[1], "", F18, C_MUTED);
-  lv_obj_set_width(wz_test_status, 440);
+  lv_obj_set_width(wz_test_status, 560);
   lv_label_set_long_mode(wz_test_status, LV_LABEL_LONG_WRAP);
-  lv_obj_set_pos(wz_test_status, 24, 360);
-  wz_next = mk_button(wz_step[1], "Suivant", 440, 56, C_ACC, C_ON_ACC, FB20, ev_next);
-  lv_obj_set_pos(wz_next, 24, 450);
+  lv_obj_set_pos(wz_test_status, 374, 92);
+  wz_next = mk_button(wz_step[1], "Suivant", 270, 54, C_ACC, C_ON_ACC, FB20, ev_next);
+  lv_obj_set_pos(wz_next, 986, 88);
   lv_obj_add_state(wz_next, LV_STATE_DISABLED);
 
   // Étape 3 : nom
-  wz_step[2] = mk_step(p.body, 490);
-  wz_name = mk_field(wz_step[2], "Nom de l'imprimante", 0, "ex. X1C atelier");
-  lv_obj_t *sv = mk_button(wz_step[2], "Enregistrer", 440, 60, C_ACC, C_ON_ACC, FB20, ev_save);
-  lv_obj_set_pos(sv, 24, 130);
+  wz_step[2] = mk_step(p.body, SCR_W);
+  wz_name = mk_field(wz_step[2], "Nom de l'imprimante", 24, 0, 700, "ex. X1C atelier");
+  lv_obj_t *sv = mk_button(wz_step[2], "Enregistrer", 300, 54, C_ACC, C_ON_ACC, FB20, ev_save);
+  lv_obj_set_pos(sv, 760, 22);
 
   // Clavier partagé (étapes 2 et 3), créé en dernier pour rester au premier plan
-  wz_kbbox = lv_obj_create(p.body);
-  plain(wz_kbbox, C_BG);
-  lv_obj_set_size(wz_kbbox, 740, 340);
-  lv_obj_set_pos(wz_kbbox, 520, 56);
-  kb_build(wz_kbbox, 0, 0);
+  wz_body = p.body;
+  kb_build(p.body, 0, KB_Y);
 
   lv_obj_add_flag(wz_step[1], LV_OBJ_FLAG_HIDDEN);
   lv_obj_add_flag(wz_step[2], LV_OBJ_FLAG_HIDDEN);
-  lv_obj_add_flag(wz_kbbox, LV_OBJ_FLAG_HIDDEN);
+  kb_hide();
   lv_timer_create(wz_tick, 500, nullptr);
 }
 

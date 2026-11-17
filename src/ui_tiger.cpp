@@ -52,7 +52,7 @@ static void ev_sync(lv_event_t *) {
 static lv_obj_t *t_body;
 
 void tiger_screen_open() {
-  kb_attach(t_body, 510, 60);
+  kb_attach(t_body, 0, KB_Y);
   focus_field(t_email);
   go(scr_tiger);
 }
@@ -61,38 +61,37 @@ static void build_tiger() {
   Page p = make_page("Tiger Studio", ev_go_settings, NAV_SET);
   scr_tiger = p.scr;
   t_body = p.body;
-  lv_obj_set_pos(mk_label(p.body, "Compte TigerTag (e-mail et mot de passe)", FB20, C_TEXT), 24, 12);
 
-  lv_obj_set_pos(mk_label(p.body, "Adresse e-mail", F18, C_MUTED), 24, 52);
+  lv_obj_set_pos(mk_label(p.body, "Adresse e-mail TigerTag", F18, C_MUTED), 24, 6);
   t_email = lv_textarea_create(p.body);
   style_ta(t_email);
   lv_textarea_set_placeholder_text(t_email, "vous@exemple.fr");
-  lv_obj_set_size(t_email, 440, 52);
-  lv_obj_set_pos(t_email, 24, 80);
+  lv_obj_set_size(t_email, 540, 52);
+  lv_obj_set_pos(t_email, 24, 34);
   lv_obj_add_event_cb(t_email, ev_field, LV_EVENT_CLICKED, nullptr);
   t_fields.push_back(t_email);
 
-  lv_obj_set_pos(mk_label(p.body, "Mot de passe", F18, C_MUTED), 24, 146);
+  lv_obj_set_pos(mk_label(p.body, "Mot de passe", F18, C_MUTED), 580, 6);
   t_pass = lv_textarea_create(p.body);
   style_ta(t_pass);
   lv_textarea_set_password_mode(t_pass, true);
   lv_textarea_set_placeholder_text(t_pass, "Mot de passe");
   lv_obj_set_size(t_pass, 440, 52);
-  lv_obj_set_pos(t_pass, 24, 174);
+  lv_obj_set_pos(t_pass, 580, 34);
   lv_obj_add_event_cb(t_pass, ev_field, LV_EVENT_CLICKED, nullptr);
   t_fields.push_back(t_pass);
 
-  lv_obj_set_pos(mk_button(p.body, "Afficher", 160, 44, C_CARD2, C_TEXT, F18, ev_show_pw), 24, 238);
-  lv_obj_set_pos(mk_button(p.body, "Se connecter", 440, 56, C_ACC, C_ON_ACC, FB20, ev_login), 24, 300);
-  lv_obj_set_pos(mk_button(p.body, "Synchroniser maintenant", 440, 48, C_CARD2, C_TEXT, F18, ev_sync), 24, 366);
-  lv_obj_set_pos(mk_button(p.body, "Se déconnecter", 440, 48, C_CARD2, C_TEXT, F18, ev_logout), 24, 424);
+  lv_obj_set_pos(mk_button(p.body, "Afficher", 150, 52, C_CARD2, C_TEXT, F18, ev_show_pw), 1032, 34);
+  lv_obj_set_pos(mk_button(p.body, "Se connecter", 300, 54, C_ACC, C_ON_ACC, FB20, ev_login), 24, 104);
+  lv_obj_set_pos(mk_button(p.body, "Synchroniser", 250, 54, C_CARD2, C_TEXT, F18, ev_sync), 336, 104);
+  lv_obj_set_pos(mk_button(p.body, "Se déconnecter", 250, 54, C_CARD2, C_TEXT, F18, ev_logout), 598, 104);
 
-  t_status = mk_label(p.body, "", F18, C_MUTED);
-  lv_obj_set_width(t_status, 440);
+  t_status = mk_label(p.body, "", F16, C_MUTED);
+  lv_obj_set_width(t_status, 380);
   lv_label_set_long_mode(t_status, LV_LABEL_LONG_WRAP);
-  lv_obj_set_pos(t_status, 24, 482);
+  lv_obj_set_pos(t_status, 872, 98);
 
-  kb_build(p.body, 510, 60);
+  kb_build(p.body, 0, KB_Y);
   focus_field(t_email);
 }
 

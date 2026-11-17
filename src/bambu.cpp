@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include "tls_gate.h"
+#include <esp_task_wdt.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <vector>
@@ -43,7 +44,7 @@ struct Conn {
     net.setInsecure();
     net.setTimeout(6);
     mqtt.setServer(cfg.ip.c_str(), 8883);
-    mqtt.setSocketTimeout(6);
+    mqtt.setSocketTimeout(3);  // PubSubClient attend le CONNACK en boucle active : moins que le watchdog (5 s)
     mqtt.setKeepAlive(30);
     // PubSubClient stocke la taille sur 16 bits : 65535 octets au maximum (65536 ou plus échoue sans erreur).
     if (!mqtt.setBufferSize(65535)) Serial.println("MQTT : tampon de 64 Ko non alloue");
@@ -246,6 +247,8 @@ static void net_task(void *) {
 }
 
 void bambu_start() {
+  // Filet de sécurité : l'attente active de PubSubClient ne doit jamais redémarrer l'appareil
+  esp_task_wdt_delete(xTaskGetIdleTaskHandleForCPU(0));
   g_mutex = xSemaphoreCreateMutex();
   JsonObject f = g_filter["print"].to<JsonObject>();
   f["gcode_state"] = true;

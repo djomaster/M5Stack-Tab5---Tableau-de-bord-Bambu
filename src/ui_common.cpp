@@ -192,40 +192,49 @@ static void ev_clear(lv_event_t *) {
   if (g_target) lv_textarea_set_text(g_target, "");
 }
 
+static const int KEY_W = 110, KEY_H = 68, KEY_PX = 118, KEY_PY = 74, KB_X0 = 54;
+
 static void add_key_row(lv_obj_t *parent, const char *base, const char *sym, int x0, int y) {
   int x = x0;
   for (int i = 0; base[i]; i++) {
     char s[2] = {base[i], 0};
     size_t idx = keys.size();
-    lv_obj_t *b = mk_button(parent, s, 66, 60, C_CARD2, C_TEXT, FB20, ev_key, (void *)(uintptr_t)idx);
+    lv_obj_t *b = mk_button(parent, s, KEY_W, KEY_H, C_CARD2, C_TEXT, FB24, ev_key, (void *)(uintptr_t)idx);
     lv_obj_set_pos(b, x, y);
     keys.push_back({b, base[i], sym[i]});
-    x += 72;
+    x += KEY_PX;
   }
 }
 
 static lv_obj_t *kb_box = nullptr;
 
-static void kb_fill(lv_obj_t *parent, int x, int y) {
-  add_key_row(parent, "1234567890", "!@#$%^&*()", x, y);
-  add_key_row(parent, "azertyuiop", "-_=+[]{}\\|", x, y + 68);
-  add_key_row(parent, "qsdfghjklm", ";:'\",<>/?`", x, y + 136);
-  add_key_row(parent, "wxcvbn.-_@", "wxcvbn.-_@", x, y + 204);
-  int r = y + 276;
-  lv_obj_t *sh = mk_button(parent, "Maj", 90, 60, C_LINE2, C_TEXT, F18, ev_shift);
-  lv_obj_set_pos(sh, x, r);
-  lv_obj_t *lk = mk_button(parent, "Verr. Maj", 120, 60, C_LINE2, C_TEXT, F16, ev_lock);
-  lv_obj_set_pos(lk, x + 96, r);
+static void kb_fill(lv_obj_t *parent) {
+  const int x = KB_X0;
+  add_key_row(parent, "1234567890", "!@#$%^&*()", x, 0);
+  add_key_row(parent, "azertyuiop", "-_=+[]{}\\|", x, KEY_PY);
+  add_key_row(parent, "qsdfghjklm", ";:'\",<>/?`", x, KEY_PY * 2);
+  add_key_row(parent, "wxcvbn.-_@", "wxcvbn.-_@", x, KEY_PY * 3);
+  int r = KEY_PY * 4;
+  int cx = x;
+  lv_obj_t *sh = mk_button(parent, "Maj", 140, KEY_H, C_LINE2, C_TEXT, F20, ev_shift);
+  lv_obj_set_pos(sh, cx, r);
+  cx += 152;
+  lv_obj_t *lk = mk_button(parent, "Verr. Maj", 180, KEY_H, C_LINE2, C_TEXT, F18, ev_lock);
+  lv_obj_set_pos(lk, cx, r);
   lock_btns.push_back(lk);
-  lv_obj_t *sy = mk_button(parent, "Symb.", 100, 60, C_LINE2, C_TEXT, F18, ev_sym);
-  lv_obj_set_pos(sy, x + 222, r);
+  cx += 192;
+  lv_obj_t *sy = mk_button(parent, "Symb.", 140, KEY_H, C_LINE2, C_TEXT, F20, ev_sym);
+  lv_obj_set_pos(sy, cx, r);
   sym_btns.push_back(sy);
-  lv_obj_t *sp = mk_button(parent, "Espace", 150, 60, C_CARD2, C_TEXT, F18, ev_space);
-  lv_obj_set_pos(sp, x + 328, r);
-  lv_obj_t *dl = mk_button(parent, "Effacer", 120, 60, C_LINE2, C_TEXT, F18, ev_del);
-  lv_obj_set_pos(dl, x + 484, r);
-  lv_obj_t *cl = mk_button(parent, "Vider", 100, 60, C_LINE2, C_TEXT, F18, ev_clear);
-  lv_obj_set_pos(cl, x + 610, r);
+  cx += 152;
+  lv_obj_t *sp = mk_button(parent, "Espace", 330, KEY_H, C_CARD2, C_TEXT, F20, ev_space);
+  lv_obj_set_pos(sp, cx, r);
+  cx += 342;
+  lv_obj_t *dl = mk_button(parent, "Effacer", 160, KEY_H, C_LINE2, C_TEXT, F20, ev_del);
+  lv_obj_set_pos(dl, cx, r);
+  cx += 172;
+  lv_obj_t *cl = mk_button(parent, "Vider", 120, KEY_H, C_LINE2, C_TEXT, F20, ev_clear);
+  lv_obj_set_pos(cl, cx, r);
 }
 
 // Un seul clavier existe (économie de mémoire) : il est créé au premier appel, puis simplement déplacé.
@@ -237,6 +246,10 @@ void kb_attach(lv_obj_t *parent, int x, int y) {
   lv_obj_move_foreground(kb_box);
 }
 
+void kb_hide() {
+  if (kb_box) lv_obj_add_flag(kb_box, LV_OBJ_FLAG_HIDDEN);
+}
+
 void kb_build(lv_obj_t *parent, int x, int y) {
   if (kb_box) {
     kb_attach(parent, x, y);
@@ -245,9 +258,9 @@ void kb_build(lv_obj_t *parent, int x, int y) {
   kb_box = lv_obj_create(parent);
   plain(kb_box, C_BG);
   lv_obj_set_style_bg_opa(kb_box, LV_OPA_TRANSP, 0);
-  lv_obj_set_size(kb_box, 730, 340);
+  lv_obj_set_size(kb_box, SCR_W, 4 * KEY_PY + KEY_H);
   lv_obj_set_pos(kb_box, x, y);
-  kb_fill(kb_box, 0, 0);
+  kb_fill(kb_box);
 }
 
 // ---------- Libellés ----------

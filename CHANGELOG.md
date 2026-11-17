@@ -7,6 +7,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ## [Non publié]
 
 ### Modifié
+- Clavier tactile pleine largeur en bas de l'écran (touches 110 x 68 px au lieu de 66 x 60). WiFi : deux modes (liste des réseaux, puis mot de passe avec clavier). Assistant imprimante et Tiger Studio : champs en haut, clavier en bas.
 - Tiger Studio : le second identifiant RFID se lit dans le champ `twin_uid` (nom confirmé par la documentation d'intégration de TigerTag ; la clé Firebase, le projet et le chemin de l'inventaire étaient déjà conformes).
 - Tiger Studio : en cas d'échec réseau, la console série détaille la cause (WiFi, DNS, TLS, mémoire).
 
@@ -25,6 +26,8 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - La tâche réseau Tiger Studio n'est créée que si un compte est connecté.
 
 ### Corrigé
+- Redémarrages par watchdog : le journal et le fichier ELF montrent que PubSubClient attend la réponse de l'imprimante (CONNACK) en boucle active pendant 6 s, plus que le délai du watchdog (5 s). Délai ramené à 3 s, et la surveillance de la tâche d'inactivité du cœur 0 est retirée par sécurité.
+- Tiger Studio : lecture du JSON tronquée (`IncompleteInput`, noms de marques et d'inventaire incomplets) : le corps de la réponse est maintenant lu en entier avant l'analyse.
 - Connexion Tiger Studio : la mémoire interne ne suffit pas pour une session TLS tant que les imprimantes gardent les leurs ouvertes (`esp-aes : Failed to allocate`). Les connexions MQTT sont suspendues pendant une synchronisation Tiger Studio (quelques secondes), puis reprennent seules. Synchronisation automatique toutes les 30 minutes au lieu de 10.
 - Une imprimante éteinte bloquait la tâche réseau 30 s par tentative (et empêchait les autres imprimantes de maintenir leur connexion) : un sondage TCP de 2,5 s précède maintenant la connexion TLS.
 - Redémarrages par « Task watchdog » (tâche `bambu_net` qui monopolise le cœur 0 pendant une connexion TLS/MQTT, la bibliothèque PubSubClient attendant en boucle). Les tâches réseau passent à la priorité 0, égale à celle de la tâche d'inactivité, qui obtient ainsi du temps. La durée de chaque connexion MQTT est tracée.
