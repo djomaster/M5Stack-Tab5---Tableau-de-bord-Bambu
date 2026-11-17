@@ -248,7 +248,11 @@ static void net_task(void *) {
 
 void bambu_start() {
   // Filet de sécurité : l'attente active de PubSubClient ne doit jamais redémarrer l'appareil
-  esp_task_wdt_delete(xTaskGetIdleTaskHandleForCPU(0));
+  esp_task_wdt_config_t wdt = {};
+  wdt.timeout_ms = 5000;
+  wdt.idle_core_mask = 0x2;  // seule la tâche d'inactivité du cœur 1 reste surveillée (bit 0 = cœur 0)
+  wdt.trigger_panic = true;
+  esp_task_wdt_reconfigure(&wdt);
   g_mutex = xSemaphoreCreateMutex();
   JsonObject f = g_filter["print"].to<JsonObject>();
   f["gcode_state"] = true;
