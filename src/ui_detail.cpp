@@ -141,13 +141,33 @@ static void detail_tick(lv_timer_t *) {
   }
 }
 
-// Sonde caméra (étape 6) : fenêtre de résultats au-dessus de l'écran.
-static lv_obj_t *cam_ov = nullptr, *cam_txt = nullptr;
+// Caméra (étape 6) : image en direct (une image toutes les 2 s) au-dessus de l'écran.
+static lv_obj_t *cam_ov = nullptr, *cam_img = nullptr, *cam_txt = nullptr;
 static lv_timer_t *cam_tm = nullptr;
+static lv_image_dsc_t cam_dsc[2];
+static uint32_t cam_seq = 0;
 static String cam_last;
 
 static void cam_refresh(lv_timer_t *) {
-  String r = camera_probe_report();
+  const uint16_t *pix;
+  int w, h;
+  uint32_t seq;
+  if (cam_img && camera_view_frame(&pix, &w, &h, &seq) && seq != cam_seq) {
+    cam_seq = seq;
+    lv_image_dsc_t *d = &cam_dsc[seq & 1];
+    lv_image_cache_drop(d);
+    memset(d, 0, sizeof(*d));
+    d->header.magic = LV_IMAGE_HEADER_MAGIC;
+    d->header.cf = LV_COLOR_FORMAT_RGB565;
+    d->header.w = w;
+    d->header.h = h;
+    d->header.stride = w * 2;
+    d->data_size = (uint32_t)w * h * 2;
+    d->data = (const uint8_t *)pix;
+    lv_image_set_src(cam_img, d);
+  }
+  String r = camera_view_status();
+  if (cam_seq) r += "\nImage n° " + String((unsigned)cam_seq) + "\nDécodage " + String((unsigned)camera_view_decode_ms()) + " ms";
   if (r != cam_last && cam_txt) {
     cam_last = r;
     lv_label_set_text(cam_txt, r.c_str());
@@ -155,17 +175,20 @@ static void cam_refresh(lv_timer_t *) {
 }
 
 static void ev_cam_close(lv_event_t *) {
+  camera_view_stop();
   if (cam_tm) lv_timer_delete(cam_tm);
   cam_tm = nullptr;
   if (cam_ov) lv_obj_delete(cam_ov);
   cam_ov = nullptr;
+  cam_img = nullptr;
   cam_txt = nullptr;
 }
 
 static void ev_cam_open(lv_event_t *) {
-  if (cam_ov || camera_probe_running()) return;
-  camera_probe_start(printers_get(d_idx));
+  if (cam_ov) return;
+  if (!camera_view_start(printers_get(d_idx))) return;  // tâche encore en cours d'arrêt : réessayer dans un instant
   cam_last = "";
+  cam_seq = 0;
   cam_ov = lv_obj_create(lv_layer_top());
   lv_obj_set_size(cam_ov, LV_PCT(100), LV_PCT(100));
   lv_obj_set_style_bg_color(cam_ov, col(C_BG), 0);
@@ -173,15 +196,17 @@ static void ev_cam_open(lv_event_t *) {
   lv_obj_set_style_border_width(cam_ov, 0, 0);
   lv_obj_set_style_radius(cam_ov, 0, 0);
   lv_obj_clear_flag(cam_ov, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_t *t = mk_label(cam_ov, "Test caméra (diagnostic du flux)", FB28, C_TEXT);
+  lv_obj_t *t = mk_label(cam_ov, "Caméra", FB28, C_TEXT);
   lv_obj_set_pos(t, 30, 20);
+  cam_img = lv_image_create(cam_ov);
+  lv_obj_set_pos(cam_img, 30, 80);
   cam_txt = mk_label(cam_ov, "Démarrage...", F18, C_TEXT);
-  lv_obj_set_width(cam_txt, 1200);
+  lv_obj_set_width(cam_txt, 320);
   lv_label_set_long_mode(cam_txt, LV_LABEL_LONG_WRAP);
-  lv_obj_set_pos(cam_txt, 30, 80);
+  lv_obj_set_pos(cam_txt, 930, 80);
   lv_obj_t *b = mk_button(cam_ov, "Fermer", 200, 60, C_CARD2, C_TEXT, F20, ev_cam_close, nullptr);
   lv_obj_set_pos(b, 1040, 630);
-  cam_tm = lv_timer_create(cam_refresh, 500, nullptr);
+  cam_tm = lv_timer_create(cam_refresh, 300, nullptr);
 }
 
 void detail_open(int printer_index) {

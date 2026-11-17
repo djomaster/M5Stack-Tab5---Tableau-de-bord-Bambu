@@ -9,7 +9,7 @@ Statuts : À faire · En cours · À valider (code écrit, pas testé sur l'appa
 | 3 | Assistant de configuration des imprimantes, MQTT, tuiles en direct | 0.3.0 | Terminé |
 | 4 | Vue détaillée, AMS, alertes sonores | 0.4.0 | Terminé (T4-09 et T4-10 à refaire) |
 | 5 | Inventaire Tiger Studio et lien avec l'AMS | 0.5.0 | Terminé (T5-13 à tester) |
-| 6 | Caméra | 0.6.0 | En cours : sonde faite ; décodeur intra seul écrit et vérifié sur PC, chronométrage sur la tablette à faire, puis affichage (D-026) |
+| 6 | Caméra | 0.6.0 | En cours : sonde faite ; décodeur intra seul écrit et vérifié sur PC, chronométrage fait (≈ 0,8 à 1 s par image), affichage d'une image toutes les 2 s écrit, à tester (D-026) |
 | 7 | Stabilisation, mémoire, tests longue durée, première version stable | 1.0.0 | À faire |
 
 ## Risques

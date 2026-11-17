@@ -14,9 +14,14 @@
 static SemaphoreHandle_t g_mx = nullptr;
 static String g_report;
 static volatile bool g_running = false;
+static volatile bool g_stop = false;
+static bool g_view = false;  // vrai : mode image en direct ; faux : sonde de diagnostic
+static String g_last_line;
 
 static const uint16_t RTSP_PORT = 322;
 static const uint32_t PLAY_MS = 8000;
+static const uint32_t VIEW_PERIOD_MS = 2000;  // une image decodee toutes les 2 s
+static const int VIEW_MAXW = 900, VIEW_MAXH = 560;
 
 // ---------------------------------------------------------------- compte rendu
 static void rep(const char *fmt, ...) {
@@ -27,6 +32,7 @@ static void rep(const char *fmt, ...) {
   va_end(ap);
   Serial.printf("Camera : %s\n", line);
   xSemaphoreTake(g_mx, portMAX_DELAY);
+  g_last_line = line;
   if (g_report.length() < 2200) {
     g_report += line;
     g_report += "\n";
@@ -210,11 +216,55 @@ struct DecGuard {
   }
 };
 
+// ---------------------------------------------------------------- image en direct (RGB565 reduite 2 fois, double tampon)
+static uint16_t *g_vbuf[2] = {nullptr, nullptr};  // alloues une fois, jamais liberes (l'interface peut encore les afficher)
+static volatile int g_front = 0;
+static volatile int g_vw = 0, g_vh = 0;
+static volatile uint32_t g_vseq = 0, g_vms = 0;
+static uint32_t g_last_pic_ms = 0;
+static bool g_want = false;
+
+static inline int clamp8(int v) { return v < 0 ? 0 : (v > 255 ? 255 : v); }
+
+// Reduit l'image decodee 2 fois (moyenne 2x2) et la convertit en RGB565 dans le tampon arriere, puis l'echange avec l'avant.
+static void view_publish() {
+  if (!g_vbuf[0]) return;
+  int ow = g_dec->width() / 2, oh = g_dec->height() / 2;
+  if (ow < 8 || oh < 8 || ow > VIEW_MAXW || oh > VIEW_MAXH) return;
+  int back = 1 - g_front;
+  uint16_t *o = g_vbuf[back];
+  const uint8_t *Y = g_dec->plane(0), *U = g_dec->plane(1), *V = g_dec->plane(2);
+  int ys = g_dec->stride(0), cs = g_dec->stride(1);
+  for (int y = 0; y < oh; y++) {
+    for (int x = 0; x < ow; x++) {
+      const uint8_t *r0 = Y + (y * 2) * ys + x * 2;
+      int sy = r0[0] + r0[1] + r0[ys] + r0[ys + 1];
+      int ci = y * cs + x;
+      int yy = (((sy >> 2) - 16) * 298) >> 8, u = U[ci] - 128, v = V[ci] - 128;
+      int rr = clamp8(yy + ((409 * v) >> 8));
+      int gg = clamp8(yy - ((100 * u + 208 * v) >> 8));
+      int bb = clamp8(yy + ((516 * u) >> 8));
+      o[y * ow + x] = (uint16_t)(((rr & 0xF8) << 8) | ((gg & 0xFC) << 3) | (bb >> 3));
+    }
+  }
+  g_vw = ow;
+  g_vh = oh;
+  g_front = back;
+  g_vseq = g_vseq + 1;
+}
+
 // Une unite NAL complete (sans code de debut) : SPS, PPS et tranches IDR vont au decodeur, les 3 premieres images sont chronometrees.
 static void nal_complete(const uint8_t *nal, size_t len) {
-  if (!g_dec || g_pics >= MAX_PICS || len < 2) return;
+  if (!g_dec || len < 2) return;
   int t = nal[0] & 0x1F;
   if (t != 5 && t != 7 && t != 8) return;
+  if (!g_view && g_pics >= MAX_PICS) return;
+  if (g_view && t == 5) {
+    // En mode image en direct, une image cle sur deux seulement est decodee (periode VIEW_PERIOD_MS).
+    Bits b{nal + 1, len - 1 > 16 ? 16 : len - 1};
+    if (b.ue() == 0) g_want = (millis() - g_last_pic_ms) >= VIEW_PERIOD_MS;
+    if (!g_want) return;
+  }
   int64_t t0 = esp_timer_get_time();
   int r = g_dec->feed(nal, len);
   int64_t dt = esp_timer_get_time() - t0;
@@ -226,8 +276,16 @@ static void nal_complete(const uint8_t *nal, size_t len) {
   if (t == 5) {
     g_pic_us += dt;
     if (g_dec->picture_ready()) {
-      g_pic_ms[g_pics++] = (uint32_t)(g_pic_us / 1000);
+      uint32_t ms = (uint32_t)(g_pic_us / 1000);
       g_pic_us = 0;
+      if (g_view) {
+        view_publish();
+        g_vms = ms;
+        g_last_pic_ms = millis();
+        g_want = false;
+      } else {
+        g_pic_ms[g_pics++] = ms;
+      }
     }
   }
 }
@@ -609,10 +667,17 @@ static void run_probe(const PrinterCfg &cfg) {
     rep("ECHEC : memoire insuffisante");
     return;
   }
-  uint32_t t_start = millis();
-  while (millis() - t_start < PLAY_MS) {
+  uint32_t t_start = millis(), t_rx = t_start;
+  g_last_pic_ms = t_start - VIEW_PERIOD_MS;
+  g_want = false;
+  if (g_view) rep("En direct : une image toutes les %u s", (unsigned)(VIEW_PERIOD_MS / 1000));
+  while (g_view ? !g_stop : (millis() - t_start < PLAY_MS)) {
     if (c.available() <= 0) {
       if (!c.connected()) break;
+      if (g_view && millis() - t_rx > 10000) {
+        rep("Flux interrompu : plus de donnees depuis 10 s");
+        break;
+      }
       vTaskDelay(pdMS_TO_TICKS(2));
       continue;
     }
@@ -630,6 +695,7 @@ static void run_probe(const PrinterCfg &cfg) {
       continue;
     }
     if (!rd(c, buf, len, 2000)) break;
+    t_rx = millis();
     if (h[0] == 0) handle_rtp(buf, len);
   }
   float secs = (millis() - t_start) / 1000.0f;
@@ -639,6 +705,11 @@ static void run_probe(const PrinterCfg &cfg) {
 
   if (st_pkts == 0) {
     rep("ECHEC : aucun paquet video recu");
+    return;
+  }
+  if (g_view) {
+    rep("Flux arrete : %u paquets, %u perdus, %u erreurs de decodage %s", (unsigned)st_pkts, (unsigned)st_lost, (unsigned)g_dec_errs,
+        g_dec_err);
     return;
   }
   if (g_sps.ok)
@@ -690,12 +761,60 @@ static void probe_task(void *arg) {
   vTaskDelete(nullptr);
 }
 
-void camera_probe_start(const PrinterCfg &cfg) {
+static void start_task(const PrinterCfg &cfg);
+
+bool camera_view_frame(const uint16_t **pix, int *w, int *h, uint32_t *seq) {
+  if (!g_vbuf[0] || g_vseq == 0) return false;
+  int f = g_front;
+  *pix = g_vbuf[f];
+  *w = g_vw;
+  *h = g_vh;
+  *seq = g_vseq;
+  return true;
+}
+
+uint32_t camera_view_decode_ms() { return g_vms; }
+
+String camera_view_status() {
+  if (!g_mx) return "";
+  xSemaphoreTake(g_mx, portMAX_DELAY);
+  String r = g_last_line;
+  xSemaphoreGive(g_mx);
+  return r;
+}
+
+void camera_view_stop() { g_stop = true; }
+
+bool camera_view_start(const PrinterCfg &cfg) {
+  if (g_running) return false;
+  if (!g_vbuf[0]) {
+    for (int i = 0; i < 2; i++) g_vbuf[i] = (uint16_t *)heap_caps_malloc((size_t)VIEW_MAXW * VIEW_MAXH * 2, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!g_vbuf[0] || !g_vbuf[1]) {
+      g_vbuf[0] = g_vbuf[1] = nullptr;  // fuite negligeable : ne se produit qu'en cas de manque de PSRAM
+      return false;
+    }
+  }
+  g_vseq = 0;
+  g_vw = g_vh = 0;
+  g_vms = 0;
+  g_view = true;
+  g_stop = false;
+  start_task(cfg);
+  return true;
+}
+
+static void start_task(const PrinterCfg &cfg) {
   if (g_running) return;
   if (!g_mx) g_mx = xSemaphoreCreateMutex();
   xSemaphoreTake(g_mx, portMAX_DELAY);
   g_report = "";
+  g_last_line = "Demarrage...";
   xSemaphoreGive(g_mx);
   g_running = true;
   xTaskCreatePinnedToCore(probe_task, "cam_probe", 20480, new PrinterCfg(cfg), 0, nullptr, 0);
+}
+
+void camera_probe_start(const PrinterCfg &cfg) {
+  g_view = false;
+  start_task(cfg);
 }
