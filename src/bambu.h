@@ -37,6 +37,8 @@ struct PrinterState {
 
 void bambu_start();
 void bambu_reload();
+// Suspend (true) ou reprend (false) les connexions MQTT : libère la mémoire interne pour une session TLS d'un autre module.
+void bambu_pause(bool pause);
 bool bambu_state(int i, PrinterState &out);
 
 void bambu_test_start(const PrinterCfg &cfg);

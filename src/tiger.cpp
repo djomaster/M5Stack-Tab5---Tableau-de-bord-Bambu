@@ -2,6 +2,7 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 #include "tls_gate.h"
+#include "bambu.h"
 #include <esp_heap_caps.h>
 #include <WiFi.h>
 #include <Preferences.h>
@@ -20,7 +21,7 @@ static const char *FB_PROJECT = "tigertag-connect";
 static const char *URL_BRANDS = "https://raw.githubusercontent.com/TigerTag-Project/TigerTag-Studio-Manager/main/assets/db/tigertag/id_brand.json";
 static const char *URL_MATERIALS = "https://raw.githubusercontent.com/TigerTag-Project/TigerTag-Studio-Manager/main/assets/db/tigertag/id_material.json";
 
-static const uint32_t SYNC_PERIOD_MS = 10UL * 60UL * 1000UL;
+static const uint32_t SYNC_PERIOD_MS = 30UL * 60UL * 1000UL;
 static const uint32_t RETRY_PERIOD_MS = 60UL * 1000UL;
 static const size_t MAX_SPOOLS = 400;
 
@@ -332,7 +333,10 @@ static void tiger_task(void *) {
       g_req_login = false;
       String e = g_req_email, p = g_req_pass;
       g_req_pass = "";
-      if (do_login(e, p)) g_req_sync = true;
+      bambu_pause(true);  // les sessions TLS des imprimantes occupent la mémoire interne dont Tiger Studio a besoin
+      bool ok = do_login(e, p);
+      bambu_pause(false);
+      if (ok) g_req_sync = true;
     } else if (g_req_login && !online) {
       g_req_login = false;
       g_req_pass = "";
@@ -343,7 +347,10 @@ static void tiger_task(void *) {
       bool due = g_last_sync == 0 ? now >= g_next_try : (now - g_last_sync > SYNC_PERIOD_MS);
       if (g_req_sync || (due && now >= g_next_try)) {
         g_req_sync = false;
-        if (!do_sync()) g_next_try = millis() + RETRY_PERIOD_MS;
+        bambu_pause(true);
+        bool ok = do_sync();
+        bambu_pause(false);
+        if (!ok) g_next_try = millis() + RETRY_PERIOD_MS;
       }
     }
     vTaskDelay(pdMS_TO_TICKS(250));

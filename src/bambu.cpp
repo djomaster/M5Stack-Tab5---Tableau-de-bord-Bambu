@@ -57,6 +57,14 @@ struct Conn {
     started = millis();
   }
 
+  // Coupe la session pour libérer la mémoire (reprise automatique ensuite)
+  void drop() {
+    if (mqtt.connected()) mqtt.disconnect();
+    net.stop();
+    set_link(Link::Connecting);
+    next_try = millis() + 1500;
+  }
+
   void set_link(Link l) {
     Lock lk;
     st.link = l;
@@ -149,6 +157,18 @@ struct Conn {
     }
     if (now < next_try) return;
     set_link(Link::Connecting);
+    {
+      // Sondage TCP court : une imprimante éteinte ne doit pas bloquer la tâche 30 s (délai par défaut)
+      WiFiClient probe;
+      IPAddress ip;
+      if (!ip.fromString(cfg.ip) || !probe.connect(ip, 8883, 2500)) {
+        Serial.printf("MQTT : %s ne repond pas (port 8883)\n", cfg.ip.c_str());
+        set_link(Link::Unreachable);
+        next_try = millis() + 10000;
+        return;
+      }
+      probe.stop();
+    }
     String cid = "tab5-" + String((uint32_t)esp_random(), HEX);
     bool ok = false;
     if (xSemaphoreTake(tls_gate(), pdMS_TO_TICKS(20000)) == pdTRUE) {
@@ -175,6 +195,8 @@ struct Conn {
 
 static std::vector<Conn *> g_conns;
 static Conn *g_test = nullptr;
+static volatile bool g_pause = false;
+static volatile bool g_idle = false;
 
 static void net_task(void *) {
   for (;;) {
@@ -200,6 +222,17 @@ static void net_task(void *) {
       delete g_test;
       g_test = new Conn(g_test_cfg);
     }
+
+    if (g_pause) {
+      if (!g_idle) {
+        for (size_t i = 0; i < g_conns.size(); i++) g_conns[i]->drop();
+        if (g_test) g_test->drop();
+        g_idle = true;
+      }
+      vTaskDelay(pdMS_TO_TICKS(50));
+      continue;
+    }
+    g_idle = false;
 
     for (size_t i = 0; i < g_conns.size(); i++) g_conns[i]->step(now);
 
@@ -240,6 +273,13 @@ void bambu_start() {
 }
 
 void bambu_reload() { g_reload = true; }
+
+void bambu_pause(bool pause) {
+  g_pause = pause;
+  if (!pause) return;
+  for (int i = 0; i < 160 && !g_idle; i++) vTaskDelay(pdMS_TO_TICKS(50));  // attend jusqu'à 8 s
+  vTaskDelay(pdMS_TO_TICKS(300));  // laisse le réseau libérer ses tampons
+}
 
 bool bambu_state(int i, PrinterState &out) {
   Lock lk;

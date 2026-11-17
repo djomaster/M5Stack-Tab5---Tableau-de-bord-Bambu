@@ -14,7 +14,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ### Ajouté
 - Compte Tiger Studio (Réglages > Tiger Studio) : connexion par e-mail et mot de passe. Le mot de passe n'est jamais conservé ; seul un jeton de renouvellement est gardé dans la mémoire de l'appareil (D-017).
-- Onglet Inventaire : liste des bobines (couleur, marque, matière, nom de la couleur, poids restant), tri par matière, filtre par matière, total en kilos, poids en orange sous 100 g, synchronisation automatique toutes les 10 minutes et bouton « Synchroniser ».
+- Onglet Inventaire : liste des bobines (couleur, marque, matière, nom de la couleur, poids restant), tri par matière, filtre par matière, total en kilos, poids en orange sous 100 g, synchronisation automatique toutes les 30 minutes et bouton « Synchroniser ».
 - Rapprochement des bobines de l'AMS avec l'inventaire, dans la vue détaillée : par identifiant de puce RFID (poids sûr), sinon par couleur et matière (poids précédé de « ~ », approximatif). Pas de rapprochement pour la bobine externe.
 - Clavier : couche « Symb. » (symboles utiles aux mots de passe).
 - Barre de navigation à trois onglets : Accueil, Inventaire, Réglages.
@@ -25,6 +25,8 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - La tâche réseau Tiger Studio n'est créée que si un compte est connecté.
 
 ### Corrigé
+- Connexion Tiger Studio : la mémoire interne ne suffit pas pour une session TLS tant que les imprimantes gardent les leurs ouvertes (`esp-aes : Failed to allocate`). Les connexions MQTT sont suspendues pendant une synchronisation Tiger Studio (quelques secondes), puis reprennent seules. Synchronisation automatique toutes les 30 minutes au lieu de 10.
+- Une imprimante éteinte bloquait la tâche réseau 30 s par tentative (et empêchait les autres imprimantes de maintenir leur connexion) : un sondage TCP de 2,5 s précède maintenant la connexion TLS.
 - Redémarrages par « Task watchdog » (tâche `bambu_net` qui monopolise le cœur 0 pendant une connexion TLS/MQTT, la bibliothèque PubSubClient attendant en boucle). Les tâches réseau passent à la priorité 0, égale à celle de la tâche d'inactivité, qui obtient ainsi du temps. La durée de chaque connexion MQTT est tracée.
 - Allocation en PSRAM par défaut retirée : elle faisait échouer les accélérateurs matériels de chiffrement (`esp-sha`, `esp-aes : Failed to allocate`), qui exigent des tampons en mémoire interne, et empêchait même des connexions MQTT. Les piles réduites et le verrou TLS (ci-dessous) restent.
 - Mémoire interne (essai 2) : l'allocation en PSRAM ne concerne pas la bibliothèque TLS, qui exige de la mémoire interne. Piles des tâches réseau réduites à 16 Ko (gain d'environ 20 Ko) ; une seule connexion TLS à la fois (imprimantes et Tiger Studio se partagent un verrou) ; Tiger Studio attend qu'un bloc de 24 Ko soit libre.
