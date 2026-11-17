@@ -418,6 +418,17 @@ static bool do_sync() {
         if (hex.startsWith("#")) hex.remove(0, 1);
         if (hex.length() >= 6) s.color = strtoul(hex.substring(0, 6).c_str(), nullptr, 16);
       }
+      {
+        // Diagnostic couleur : valeurs brutes des bobines HIPS (pour vérifier la lecture de online_color_list)
+        auto mt = g_materials.find(s.material);
+        if (mt != g_materials.end() && mt->second.indexOf("HIPS") >= 0) {
+          String raw;
+          serializeJson(colors, raw);
+          auto br = g_brands.find(s.brand);
+          Serial.printf("Tiger : couleur HIPS %s / %s : online_color_list=%s -> %06X\n", br != g_brands.end() ? br->second.c_str() : "?",
+                        s.color_name.c_str(), raw.c_str(), (unsigned)s.color);
+        }
+      }
       if (list.size() < MAX_SPOOLS) list.push_back(s);
     }
     page_token = out["nextPageToken"] | "";

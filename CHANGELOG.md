@@ -7,6 +7,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ## [Non publié]
 
 ### Modifié
+- Inventaire : trois filtres (Marque, Matière, Couleur) à choisir dans une liste avec le nombre de bobines ; ils se combinent, bouton « Réinitialiser ». La couleur est classée par famille (Noir, Blanc, Gris, Rouge, Orange, Marron, Jaune, Vert, Cyan, Bleu, Violet, Rose) d'après le code RVB.
+- Réglages : bouton « Redémarrer la tablette » (confirmation en deux appuis).
+- Diagnostic : la valeur brute de la couleur des bobines HIPS est affichée sur la console à chaque synchronisation.
 - Inventaire : sauvegardé en mémoire flash (LittleFS, `/tiger.tsv`) avec les noms de marques et de matières ; il réapparaît dès le démarrage, avant la première synchronisation.
 - Diagnostic : les 16 dernières étapes sont conservées en mémoire RTC et affichées au démarrage suivant un plantage (« Avant le redemarrage, dernieres etapes : … »).
 - Inventaire : filtre par matière en pastilles cliquables (« Toutes » + une par matière), à la place du bouton cyclique.

@@ -132,6 +132,23 @@ static void build_home() {
 }
 
 // ---------- Réglages ----------
+static lv_obj_t *s_reboot_btn;
+// Redémarrage en deux appuis : le premier demande confirmation (4 s), le second redémarre.
+static void ev_reboot(lv_event_t *) {
+  static uint32_t first = 0;
+  uint32_t now = millis();
+  if (first && now - first < 4000) {
+    toast("Redémarrage...");
+    lv_timer_handler();
+    delay(300);
+    ESP.restart();
+    return;
+  }
+  first = now;
+  lv_label_set_text(lv_obj_get_child(s_reboot_btn, 0), "Appuyez encore pour confirmer le redémarrage");
+  lv_timer_t *tm = lv_timer_create([](lv_timer_t *) { lv_label_set_text(lv_obj_get_child(s_reboot_btn, 0), "Redémarrer la tablette"); }, 4000, nullptr);
+  lv_timer_set_repeat_count(tm, 1);
+}
 static void build_settings() {
   Page p = make_page("Réglages", nullptr, NAV_SET);
   scr_settings = p.scr;
@@ -144,13 +161,18 @@ static void build_settings() {
   };
   int y = 24;
   for (auto &it : items) {
-    lv_obj_t *b = mk_button(p.body, it.txt, 900, 70, C_CARD, C_TEXT, FB20, it.cb);
+    lv_obj_t *b = mk_button(p.body, it.txt, 900, 62, C_CARD, C_TEXT, FB20, it.cb);
     lv_obj_set_pos(b, 190, y);
     lv_obj_set_style_border_width(b, 2, 0);
     lv_obj_set_style_border_color(b, col(C_LINE), 0);
     lv_obj_align(lv_obj_get_child(b, 0), LV_ALIGN_LEFT_MID, 24, 0);
-    y += 86;
+    y += 74;
   }
+  s_reboot_btn = mk_button(p.body, "Redémarrer la tablette", 900, 62, C_CARD, C_WARN_T, FB20, ev_reboot);
+  lv_obj_set_pos(s_reboot_btn, 190, y);
+  lv_obj_set_style_border_width(s_reboot_btn, 2, 0);
+  lv_obj_set_style_border_color(s_reboot_btn, col(C_LINE), 0);
+  lv_obj_align(lv_obj_get_child(s_reboot_btn, 0), LV_ALIGN_LEFT_MID, 24, 0);
 }
 
 // ---------- À propos ----------
