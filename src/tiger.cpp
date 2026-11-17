@@ -248,12 +248,12 @@ static bool do_sync() {
     JsonDocument filter;
     filter["nextPageToken"] = true;
     filter["error"]["message"] = true;
-    for (const char *k : {"uid", "tag_uid", "twin_tag_uid", "id_brand", "id_material", "color_name", "online_color_list",
+    for (const char *k : {"uid", "tag_uid", "twin_uid", "id_brand", "id_material", "color_name", "online_color_list",
                           "weight_available", "capacity", "deleted"})
       filter["documents"][0]["fields"][k] = true;
     String url = String("https://firestore.googleapis.com/v1/projects/") + FB_PROJECT + "/databases/(default)/documents/users/" +
                  g_uid + "/inventory?pageSize=100";
-    for (const char *k : {"uid", "tag_uid", "twin_tag_uid", "id_brand", "id_material", "color_name", "online_color_list",
+    for (const char *k : {"uid", "tag_uid", "twin_uid", "id_brand", "id_material", "color_name", "online_color_list",
                           "weight_available", "capacity", "deleted"})
       url += String("&mask.fieldPaths=") + k;
     if (page_token.length()) url += "&pageToken=" + url_encode(page_token);
@@ -271,7 +271,7 @@ static bool do_sync() {
       Spool s;
       s.uid = strv(f["uid"]);
       s.tag = strv(f["tag_uid"]);
-      s.twin = strv(f["twin_tag_uid"]);
+      s.twin = strv(f["twin_uid"]);
       s.brand = (int)numv(f["id_brand"]);
       s.material = (int)numv(f["id_material"]);
       s.color_name = strv(f["color_name"]);
