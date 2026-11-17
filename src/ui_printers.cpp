@@ -125,7 +125,10 @@ static void show_step(int n) {
     else lv_obj_add_flag(wz_step[i], LV_OBJ_FLAG_HIDDEN);
   }
   if (n == 0) lv_obj_add_flag(wz_kbbox, LV_OBJ_FLAG_HIDDEN);
-  else lv_obj_remove_flag(wz_kbbox, LV_OBJ_FLAG_HIDDEN);
+  else {
+    lv_obj_remove_flag(wz_kbbox, LV_OBJ_FLAG_HIDDEN);
+    kb_attach(wz_kbbox, 0, 0);
+  }
   static const char *titles[3] = {"Étape 1 sur 3 : recherche de l'imprimante", "Étape 2 sur 3 : identifiants et test",
                                   "Étape 3 sur 3 : nom de l'imprimante"};
   lv_label_set_text(wz_head, titles[n]);

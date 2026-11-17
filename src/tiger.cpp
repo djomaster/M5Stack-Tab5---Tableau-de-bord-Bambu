@@ -319,22 +319,32 @@ static void tiger_task(void *) {
 }
 
 // ---------------------------------------------------------------------
+static bool g_task_started = false;
+static void ensure_task() {
+  if (g_task_started) return;
+  g_task_started = true;
+  xTaskCreatePinnedToCore(tiger_task, "tiger_net", 24576, nullptr, 1, nullptr, 0);
+}
+
 void tiger_begin() {
   g_mutex = xSemaphoreCreateMutex();
   Preferences pr;
-  pr.begin("tiger", true);
+  pr.begin("tiger", false);
   g_email = pr.getString("email", "");
   g_refresh = pr.getString("rtoken", "");
   g_uid = pr.getString("uid", "");
   pr.end();
-  if (g_refresh.length()) g_state = TigerState::Syncing;
-  xTaskCreatePinnedToCore(tiger_task, "tiger_net", 24576, nullptr, 1, nullptr, 0);
+  if (g_refresh.length()) {
+    g_state = TigerState::Syncing;
+    ensure_task();  // sans compte, la tâche (et sa pile de 24 Ko en mémoire interne) n'est pas créée
+  }
 }
 
 bool tiger_signed_in() { return g_refresh.length() > 0; }
 String tiger_email() { return g_email; }
 
 void tiger_login(const String &email, const String &password) {
+  ensure_task();
   g_req_email = email;
   g_req_pass = password;
   g_req_login = true;

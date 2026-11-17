@@ -169,7 +169,7 @@ static void build_about() {
 }
 
 // ---------- WiFi ----------
-static lv_obj_t *wifi_list, *wifi_status, *wifi_sel_label, *wifi_ta;
+static lv_obj_t *wifi_list, *wifi_status, *wifi_sel_label, *wifi_ta, *wifi_body;
 static bool g_show_pw = false;
 static String g_sel_ssid;
 static bool g_scanning = false;
@@ -239,6 +239,7 @@ static void scan_tick(lv_timer_t *) {
 }
 
 static void ev_go_wifi(lv_event_t *) {
+  kb_attach(wifi_body, 500, 124);
   kb_set_target(wifi_ta);
   go(scr_wifi);
   start_scan();
@@ -247,6 +248,7 @@ static void ev_go_wifi(lv_event_t *) {
 static void build_wifi() {
   Page p = make_page("WiFi", ev_go_settings, NAV_SET);
   scr_wifi = p.scr;
+  wifi_body = p.body;
 
   lv_obj_t *scan = mk_button(p.body, "Rechercher", 200, 48, C_CARD2, C_TEXT, F18, ev_scan);
   lv_obj_set_pos(scan, 24, 12);

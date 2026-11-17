@@ -204,7 +204,9 @@ static void add_key_row(lv_obj_t *parent, const char *base, const char *sym, int
   }
 }
 
-void kb_build(lv_obj_t *parent, int x, int y) {
+static lv_obj_t *kb_box = nullptr;
+
+static void kb_fill(lv_obj_t *parent, int x, int y) {
   add_key_row(parent, "1234567890", "!@#$%^&*()", x, y);
   add_key_row(parent, "azertyuiop", "-_=+[]{}\\|", x, y + 68);
   add_key_row(parent, "qsdfghjklm", ";:'\",<>/?`", x, y + 136);
@@ -224,6 +226,28 @@ void kb_build(lv_obj_t *parent, int x, int y) {
   lv_obj_set_pos(dl, x + 484, r);
   lv_obj_t *cl = mk_button(parent, "Vider", 100, 60, C_LINE2, C_TEXT, F18, ev_clear);
   lv_obj_set_pos(cl, x + 610, r);
+}
+
+// Un seul clavier existe (économie de mémoire) : il est créé au premier appel, puis simplement déplacé.
+void kb_attach(lv_obj_t *parent, int x, int y) {
+  if (!kb_box) return;
+  lv_obj_set_parent(kb_box, parent);
+  lv_obj_set_pos(kb_box, x, y);
+  lv_obj_remove_flag(kb_box, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_move_foreground(kb_box);
+}
+
+void kb_build(lv_obj_t *parent, int x, int y) {
+  if (kb_box) {
+    kb_attach(parent, x, y);
+    return;
+  }
+  kb_box = lv_obj_create(parent);
+  plain(kb_box, C_BG);
+  lv_obj_set_style_bg_opa(kb_box, LV_OPA_TRANSP, 0);
+  lv_obj_set_size(kb_box, 730, 340);
+  lv_obj_set_pos(kb_box, x, y);
+  kb_fill(kb_box, 0, 0);
 }
 
 // ---------- Libellés ----------

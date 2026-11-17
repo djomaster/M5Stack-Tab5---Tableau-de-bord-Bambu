@@ -2,6 +2,7 @@
 // Version 0.5.0 : inventaire Tiger Studio et rapprochement avec les bobines de l'AMS.
 
 #include <M5Unified.h>
+#include <esp_heap_caps.h>
 #include <lvgl.h>
 #include "alerts.h"
 #include "bambu.h"
@@ -12,6 +13,12 @@
 #include "ui.h"
 #include "version.h"
 #include "wifi_manager.h"
+
+static void log_memory(const char *where) {
+  Serial.printf("Mem [%s] : interne libre %u (bloc max %u) | PSRAM libre %u\n", where,
+                (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL), (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL),
+                (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+}
 
 void setup() {
   auto cfg = M5.config();
@@ -27,9 +34,15 @@ void setup() {
   display_port_init();
   fonts_init();
   ui_init();
+  log_memory("demarrage");
 }
 
 void loop() {
+  static uint32_t last_mem = 0;
+  if (millis() - last_mem > 10000) {
+    last_mem = millis();
+    log_memory("10 s");
+  }
   M5.update();
   wifi_update();
   lv_timer_handler();

@@ -53,6 +53,7 @@ void ev_go_settings(lv_event_t *e);
 // Les touches écrivent dans le champ désigné par kb_set_target().
 void kb_build(lv_obj_t *parent, int x, int y);
 void kb_set_target(lv_obj_t *ta);
+void kb_attach(lv_obj_t *parent, int x, int y);  // déplace le clavier (unique) sur un autre écran
 
 // Écrans des imprimantes (ui_printers.cpp)
 void ui_printers_build();

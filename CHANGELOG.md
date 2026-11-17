@@ -17,6 +17,11 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ### Modifié
 - Menu Réglages : sept entrées plus compactes (ajout de Tiger Studio).
+- Un seul clavier tactile, déplacé d'un écran à l'autre, au lieu d'un par écran.
+- La tâche réseau Tiger Studio n'est créée que si un compte est connecté.
+
+### Corrigé
+- Redémarrages en boucle après la connexion des imprimantes (`assert failed: sdio_rx_get_buffer`, pilote WiFi du coprocesseur). Cause probable, non démontrée : manque de mémoire interne, la 0.5.0 ayant ajouté deux claviers (une centaine de boutons) et une tâche de 24 Ko. Réduction de ces deux postes ; la console série affiche maintenant la mémoire libre (« Mem ») au démarrage et toutes les 10 secondes pour confirmer.
 
 ### Limites connues
 - Tiger Studio n'a pas d'API publique : la lecture passe par la base Firebase de TigerTag, avec les droits de l'utilisateur. Ce fonctionnement n'est pas documenté officiellement et peut changer.

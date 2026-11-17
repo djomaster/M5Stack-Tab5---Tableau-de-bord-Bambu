@@ -49,11 +49,18 @@ static void ev_sync(lv_event_t *) {
   tiger_sync_now();
 }
 
-void tiger_screen_open() { go(scr_tiger); }
+static lv_obj_t *t_body;
+
+void tiger_screen_open() {
+  kb_attach(t_body, 510, 60);
+  focus_field(t_email);
+  go(scr_tiger);
+}
 
 static void build_tiger() {
   Page p = make_page("Tiger Studio", ev_go_settings, NAV_SET);
   scr_tiger = p.scr;
+  t_body = p.body;
   lv_obj_set_pos(mk_label(p.body, "Compte TigerTag (e-mail et mot de passe)", FB20, C_TEXT), 24, 12);
 
   lv_obj_set_pos(mk_label(p.body, "Adresse e-mail", F18, C_MUTED), 24, 52);
