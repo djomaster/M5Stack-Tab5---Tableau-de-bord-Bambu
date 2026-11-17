@@ -355,7 +355,7 @@ static bool g_task_started = false;
 static void ensure_task() {
   if (g_task_started) return;
   g_task_started = true;
-  xTaskCreatePinnedToCore(tiger_task, "tiger_net", 16384, nullptr, 1, nullptr, 0);
+  xTaskCreatePinnedToCore(tiger_task, "tiger_net", 16384, nullptr, 0, nullptr, 0);
 }
 
 void tiger_begin() {

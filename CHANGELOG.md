@@ -25,6 +25,7 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - La tâche réseau Tiger Studio n'est créée que si un compte est connecté.
 
 ### Corrigé
+- Redémarrages par « Task watchdog » (tâche `bambu_net` qui monopolise le cœur 0 pendant une connexion TLS/MQTT, la bibliothèque PubSubClient attendant en boucle). Les tâches réseau passent à la priorité 0, égale à celle de la tâche d'inactivité, qui obtient ainsi du temps. La durée de chaque connexion MQTT est tracée.
 - Allocation en PSRAM par défaut retirée : elle faisait échouer les accélérateurs matériels de chiffrement (`esp-sha`, `esp-aes : Failed to allocate`), qui exigent des tampons en mémoire interne, et empêchait même des connexions MQTT. Les piles réduites et le verrou TLS (ci-dessous) restent.
 - Mémoire interne (essai 2) : l'allocation en PSRAM ne concerne pas la bibliothèque TLS, qui exige de la mémoire interne. Piles des tâches réseau réduites à 16 Ko (gain d'environ 20 Ko) ; une seule connexion TLS à la fois (imprimantes et Tiger Studio se partagent un verrou) ; Tiger Studio attend qu'un bloc de 24 Ko soit libre.
 - Connexion Tiger Studio impossible (« Erreur réseau code -1 ») : la console montrait `SSL - Memory allocation failed` avec 40 Ko de mémoire interne libre sur 31 Mo de PSRAM. (Essai 1, abandonné : voir ci-dessus.)

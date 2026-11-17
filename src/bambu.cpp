@@ -152,8 +152,10 @@ struct Conn {
     String cid = "tab5-" + String((uint32_t)esp_random(), HEX);
     bool ok = false;
     if (xSemaphoreTake(tls_gate(), pdMS_TO_TICKS(20000)) == pdTRUE) {
+      uint32_t t0 = millis();
       ok = mqtt.connect(cid.c_str(), "bblp", cfg.code.c_str());
       xSemaphoreGive(tls_gate());
+      Serial.printf("MQTT : connexion vers %s en %u ms (ok=%d)\n", cfg.ip.c_str(), (unsigned)(millis() - t0), ok);
     }
     if (ok) {
       bool sub_ok = mqtt.subscribe(topic_report.c_str());
@@ -234,7 +236,7 @@ void bambu_start() {
   f["ams"]["ams"][0]["tray"][0]["remain"] = true;
   f["ams"]["ams"][0]["tray"][0]["tag_uid"] = true;
   g_reload = true;
-  xTaskCreatePinnedToCore(net_task, "bambu_net", 16384, nullptr, 1, nullptr, 0);
+  xTaskCreatePinnedToCore(net_task, "bambu_net", 16384, nullptr, 0, nullptr, 0);
 }
 
 void bambu_reload() { g_reload = true; }
