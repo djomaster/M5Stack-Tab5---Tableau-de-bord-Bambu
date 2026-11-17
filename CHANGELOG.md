@@ -6,8 +6,25 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
+## [0.2.0] - 2026-11-17 (à valider sur l'appareil, voir T2 dans `docs/TESTS.md`)
+
+### Ajouté
+- Interface LVGL 9.2.2 en 1280 × 720 : accueil avec données d'exemple (X1C en impression, H2C en erreur, tuile « Ajouter une imprimante »), menu Réglages, écran À propos, barre d'état (WiFi, batterie) et barre de navigation.
+- Configuration du WiFi à l'écran : recherche des réseaux, saisie du mot de passe (clavier AZERTY tactile avec Maj, Afficher/Masquer), connexion, enregistrement dans la mémoire de l'appareil et reconnexion automatique au démarrage. Au premier démarrage, l'écran WiFi s'ouvre directement.
+- Accents français : polices Liberation Sans (licence OFL) embarquées, générées par `tools/make_font_headers.py` (D-013).
+
+### Modifié
+- Découpage du code : `display_port`, `fonts`, `wifi_manager`, `ui`, `main`.
+
+### Supprimé
+- `src/config.h` et `src/config.example.h` : le WiFi ne se configure plus par fichier (D-012).
+
+### Limites connues
+- Les écrans Imprimantes, Alertes et Affichage affichent seulement « Disponible dans une prochaine version ». Aucune connexion aux imprimantes pour l'instant.
+- Code écrit sans pouvoir être compilé dans l'environnement de développement : la première compilation est à faire par l'utilisateur.
+
 ### Corrigé
-- `src/config.h` (WiFi) était suivi par git depuis le commit « première compilation », alors qu'il doit rester local. Il n'est plus suivi ; le fichier local est conservé et le modèle reste `src/config.example.h`. Aucun mot de passe réel n'avait été commité (vérifié sur tout l'historique).
+- `src/config.h` (WiFi) était suivi par git depuis le commit « première compilation », alors qu'il doit rester local. Il n'est plus suivi (puis supprimé en 0.2.0). Aucun mot de passe réel n'avait été commité (vérifié sur tout l'historique).
 
 ### Validé
 - Étape 1 sur le Tab5 : téléversement, affichage de la version, tactile, batterie et PSRAM (T1-02 à T1-06). WiFi (T1-07) : réussi, adresse IP obtenue. L'étape 1 est terminée.

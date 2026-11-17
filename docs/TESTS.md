@@ -18,3 +18,20 @@ Informations de l'appareil à compléter au premier test :
 | T1-05 | Batterie | Niveau cohérent | Réussi (v0.1.2) | 2026-11-17 | 67 % affiché |
 | T1-06 | PSRAM | Environ 30 Mo libres affichés | Réussi (v0.1.2) | 2026-11-17 | 30 Mo affichés |
 | T1-07 | WiFi | Adresse IP affichée sous 30 s | Réussi (v0.1.2) | 2026-11-17 | Adresse IP affichée : 192.168.4.186. Les broches SDIO vers l'ESP32-C6 sont validées |
+
+## Étape 2 - version 0.2.0
+
+À exécuter par l'utilisateur sur le Tab5. Statuts : À faire / Réussi / Échec.
+
+| N° | Test | Résultat attendu | Statut | Notes |
+|---|---|---|---|---|
+| T2-01 | Compilation de l'environnement `tab5` (LVGL, polices) | « SUCCESS » sans erreur | À faire | |
+| T2-02 | Téléversement et démarrage | L'écran s'allume, pas de redémarrage en boucle | À faire | |
+| T2-03 | Orientation | Affichage en paysage 1280 × 720, pas de déformation | À faire | |
+| T2-04 | Alignement du toucher | Un appui touche le bouton visé | À faire | |
+| T2-05 | Accents | « Réglages », « À propos », « Filament épuisé » s'affichent correctement | À faire | |
+| T2-06 | Navigation | Accueil, Réglages, WiFi, À propos et retour fonctionnent | À faire | |
+| T2-07 | Recherche WiFi | La liste des réseaux apparaît en quelques secondes | À faire | |
+| T2-08 | Saisie et connexion | Mot de passe saisi (Maj, Afficher), connexion, adresse IP affichée | À faire | |
+| T2-09 | Persistance | Après redémarrage, reconnexion automatique, écran d'accueil | À faire | |
+| T2-10 | Fluidité | Pas de saccade visible au défilement et à la saisie | À faire | |

@@ -32,7 +32,7 @@ Afficher sur un M5Stack Tab5 l'état de plusieurs imprimantes Bambu Lab (X1C, H2
 
 ## Configuration
 
-Les imprimantes sont configurées sur le Tab5 lui-même par un assistant (voir plus bas) et enregistrées dans la mémoire interne de l'appareil (nom, adresse IP, numéro de série, code d'accès). Il n'y a pas de fichier de configuration à éditer à la main. Aucun secret ne doit être écrit dans le code ni dans git. Le fichier `src/config.h` (WiFi) est ignoré par git ; `src/config.example.h` sert de modèle.
+Les imprimantes sont configurées sur le Tab5 lui-même par un assistant (voir plus bas) et enregistrées dans la mémoire interne de l'appareil (nom, adresse IP, numéro de série, code d'accès). Il n'y a pas de fichier de configuration à éditer à la main. Aucun secret ne doit être écrit dans le code ni dans git. Le WiFi est enregistré de la même façon (mémoire de l'appareil, espace « wifi »).
 
 ## Assistant de configuration des imprimantes
 
@@ -49,7 +49,7 @@ Parcours pour ajouter une imprimante, tout au toucher :
 Contraintes :
 - Le code d'accès est saisi masqué et jamais écrit dans les journaux série.
 - Il est stocké dans la mémoire interne du Tab5 (en clair, comme sur l'imprimante) : quiconque a l'appareil en main peut le retrouver. À noter dans les réglages de sécurité.
-- Le WiFi se configure aussi à l'écran, dans le menu Réglages (voir plus bas). `src/config.h` disparaît du projet.
+- Le WiFi se configure aussi à l'écran, dans le menu Réglages (voir plus bas). `src/config.h` a disparu du projet (version 0.2.0).
 - La découverte automatique reste à valider sur les trois modèles ; la saisie manuelle est toujours disponible.
 
 ## Menu Réglages

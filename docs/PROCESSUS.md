@@ -11,8 +11,8 @@
 - Branche `main` : toujours dans un état qui compile et qui a été testé sur l'appareil.
 - Une branche par chantier : `etape-2-mqtt`, `correctif-wifi`, etc. Fusion dans `main` seulement après test.
 - Messages de commit : une ligne claire en français, au présent, préfixée par un type : `ajout:`, `correctif:`, `doc:`, `refactor:`. Exemple : `ajout: tuile imprimante avec progression`.
-- Avant chaque commit, vérifier avec `git status` que `src/config.h` n'apparaît pas. Un fichier déjà suivi par git reste suivi même s'il est ensuite ajouté à `.gitignore` ; il faut alors le retirer avec `git rm --cached`.
-- Jamais de secret dans git : mots de passe WiFi, codes d'accès des imprimantes, jetons. Ils vivent dans `src/config.h` et sur la carte SD, tous deux ignorés.
+- Avant chaque commit, vérifier avec `git status` qu'aucun fichier de secrets n'apparaît. Un fichier déjà suivi par git reste suivi même s'il est ensuite ajouté à `.gitignore` ; il faut alors le retirer avec `git rm --cached`.
+- Jamais de secret dans git : mots de passe WiFi, codes d'accès des imprimantes, jetons. Ils vivent dans la mémoire de l'appareil (jamais dans un fichier du projet).
 
 ## Avant de publier une version
 

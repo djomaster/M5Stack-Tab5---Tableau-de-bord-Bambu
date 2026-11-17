@@ -3,7 +3,7 @@
 ## Compiler et téléverser
 
 1. Ouvrir le dossier du projet dans VS Code (extension PlatformIO).
-2. Copier `src/config.example.h` en `src/config.h` si ce dernier n'existe pas, puis renseigner le WiFi.
+2. Aucun fichier de configuration : le WiFi se règle sur l'appareil (Réglages, WiFi).
 3. Compiler l'environnement `tab5`. Le premier build télécharge la plateforme pioarduino : prévoir plusieurs minutes.
 4. Brancher le Tab5 avec un câble USB de données, puis téléverser.
 5. Ouvrir le moniteur série (115200) pour lire les messages.

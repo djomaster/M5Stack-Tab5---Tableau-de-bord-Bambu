@@ -19,11 +19,11 @@ Tableau de bord multi-imprimantes (X1C, H2C, H3C envisagée) sur M5Stack Tab5 : 
 ## Démarrage rapide
 
 1. Ouvrir ce dossier dans VS Code (extension PlatformIO).
-2. Renseigner le WiFi dans `src/config.h` (modèle : `src/config.example.h`).
+2. Le WiFi se règle sur le Tab5 lui-même : menu Réglages, puis WiFi (aucun fichier à éditer).
 3. Compiler et téléverser l'environnement `tab5`.
 
 Détails et dépannage : `docs/PROCEDURES.md`.
 
 ## Secrets
 
-`src/config.h` et le futur fichier de configuration des imprimantes contiennent des mots de passe et codes d'accès : ils ne vont jamais dans git.
+Les mots de passe WiFi et codes d'accès des imprimantes sont enregistrés dans la mémoire de l'appareil, jamais dans le code ni dans git.
