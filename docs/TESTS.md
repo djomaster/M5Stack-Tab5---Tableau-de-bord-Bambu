@@ -93,3 +93,9 @@ Informations de l'appareil à compléter au premier test :
 | T5-12 | Lien AMS : couleur/matière | Une bobine sans puce reconnue affiche un poids précédé de « ~ » | OK | présumé OK |
 | T5-13 | Déconnexion | « Se déconnecter » vide l'inventaire et retire le compte | À faire | Non rapporté |
 | T5-14 | Fluidité | Pas de gel de l'écran pendant la synchronisation ni le défilement de la liste | OK | fluidité correcte |
+
+## Tests de longue durée (0.5.0)
+
+| N° | Test | Résultat attendu | Résultat | Remarque |
+|---|---|---|---|---|
+| L-01 | Marche continue, 2 imprimantes + Tiger Studio | Pas de redémarrage, mémoire stable | OK | 2026-11-17 : 3 h 17 min sans redémarrage, 38 synchronisations Tiger (toutes les 5 min). Mémoire interne libre : 281 Ko → 276 Ko (≈ -5 Ko en 3 h), creux de 220 Ko pendant les sessions TLS, plus grand bloc minimal 176 Ko. X1C éteinte puis reconnectée à l'allumage. |
