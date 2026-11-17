@@ -7,6 +7,8 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ## [Non publié]
 
 ### Modifié
+- Inventaire : la couleur des bobines TigerData (puce Tiger sans `online_color_list`) est lue dans `color_r/g/b`, et le nom de couleur dans `message` (corrige les deux CC3D HIPS affichées en noir). Le diagnostic « document brut » est retiré.
+- WiFi : SSID et adresse IP mis en cache à la connexion au lieu d'être relus chaque seconde (le WiFi du P4 passe par un coprocesseur ; piste pour les redémarrages watchdog).
 - Diagnostic couleur : pour une bobine HIPS sans `online_color_list` (les deux CC3D s'affichent en noir), le document Tiger brut est affiché une fois sur la console afin de trouver le champ qui porte la vraie couleur.
 - Inventaire : trois filtres (Marque, Matière, Couleur) à choisir dans une liste avec le nombre de bobines ; ils se combinent, bouton « Réinitialiser ». La couleur est classée par famille (Noir, Blanc, Gris, Rouge, Orange, Marron, Jaune, Vert, Cyan, Bleu, Violet, Rose) d'après le code RVB.
 - Réglages : bouton « Redémarrer la tablette » (confirmation en deux appuis).

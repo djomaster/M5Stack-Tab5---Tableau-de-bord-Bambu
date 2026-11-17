@@ -369,27 +369,6 @@ static void cache_load() {
   Serial.printf("Tiger : cache charge, %u bobines\n", (unsigned)g_spools.size());
 }
 
-static std::vector<String> g_dump_names;
-static bool g_dump_done = false;
-
-// Diagnostic couleur : affiche tous les champs bruts d'une bobine dont online_color_list est vide (une seule fois par démarrage).
-static void dump_raw_docs() {
-  if (g_dump_done) return;
-  g_dump_done = true;
-  for (auto &nm : g_dump_names) {
-    if (nm.isEmpty()) continue;
-    JsonDocument filter;
-    filter.set(true);
-    JsonDocument out(&g_psram);
-    int code = http_json("https://firestore.googleapis.com/v1/" + nm, false, "", nullptr, g_id_token.c_str(), filter, out);
-    String raw;
-    serializeJson(out["fields"], raw);
-    Serial.printf("Tiger : document brut (HTTP %d, %u octets) :\n", code, (unsigned)raw.length());
-    for (size_t i = 0; i < raw.length(); i += 400) Serial.println(raw.substring(i, i + 400));
-  }
-  g_dump_names.clear();
-}
-
 static bool do_sync() {
   if (!ensure_token()) return false;
   set_state(TigerState::Syncing);
@@ -404,14 +383,13 @@ static bool do_sync() {
     JsonDocument filter;
     filter["nextPageToken"] = true;
     filter["error"]["message"] = true;
-    filter["documents"][0]["name"] = true;
     for (const char *k : {"uid", "tag_uid", "twin_uid", "id_brand", "id_material", "color_name", "online_color_list",
-                          "weight_available", "capacity", "deleted"})
+                          "weight_available", "capacity", "deleted", "color_r", "color_g", "color_b", "message"})
       filter["documents"][0]["fields"][k] = true;
     String url = String("https://firestore.googleapis.com/v1/projects/") + FB_PROJECT + "/databases/(default)/documents/users/" +
                  g_uid + "/inventory?pageSize=100";
     for (const char *k : {"uid", "tag_uid", "twin_uid", "id_brand", "id_material", "color_name", "online_color_list",
-                          "weight_available", "capacity", "deleted"})
+                          "weight_available", "capacity", "deleted", "color_r", "color_g", "color_b", "message"})
       url += String("&mask.fieldPaths=") + k;
     if (page_token.length()) url += "&pageToken=" + url_encode(page_token);
     JsonDocument out(&g_psram);
@@ -435,23 +413,21 @@ static bool do_sync() {
       s.weight = (int)numv(f["weight_available"]);
       s.capacity = (int)numv(f["capacity"]);
       JsonArray colors = f["online_color_list"]["arrayValue"]["values"];
+      bool have_color = false;
       if (!colors.isNull() && colors.size() > 0) {
         String hex = strv(colors[0]);
         if (hex.startsWith("#")) hex.remove(0, 1);
-        if (hex.length() >= 6) s.color = strtoul(hex.substring(0, 6).c_str(), nullptr, 16);
-      }
-      {
-        // Diagnostic couleur : valeurs brutes des bobines HIPS (pour vérifier la lecture de online_color_list)
-        auto mt = g_materials.find(s.material);
-        if (mt != g_materials.end() && mt->second.indexOf("HIPS") >= 0) {
-          String raw;
-          serializeJson(colors, raw);
-          auto br = g_brands.find(s.brand);
-          if (colors.isNull() && g_dump_names.size() < 2) g_dump_names.push_back(String((const char *)(d["name"] | "")));
-          Serial.printf("Tiger : couleur HIPS %s / %s : online_color_list=%s -> %06X\n", br != g_brands.end() ? br->second.c_str() : "?",
-                        s.color_name.c_str(), raw.c_str(), (unsigned)s.color);
+        if (hex.length() >= 6) {
+          s.color = strtoul(hex.substring(0, 6).c_str(), nullptr, 16);
+          have_color = true;
         }
       }
+      // Bobines TigerData : la couleur est dans color_r / color_g / color_b et le nom dans « message »
+      if (!have_color) {
+        double r = numv(f["color_r"]), g = numv(f["color_g"]), b = numv(f["color_b"]);
+        if (r >= 0 && g >= 0 && b >= 0) s.color = ((uint32_t)r << 16) | ((uint32_t)g << 8) | (uint32_t)b;
+      }
+      if (s.color_name.isEmpty()) s.color_name = strv(f["message"]);
       if (list.size() < MAX_SPOOLS) list.push_back(s);
     }
     page_token = out["nextPageToken"] | "";
@@ -476,7 +452,6 @@ static bool do_sync() {
   if (changed) cache_save(g_spools);
   g_last_sync = millis();
   Serial.printf("Tiger : %u bobines synchronisees\n", (unsigned)g_spools.size());
-  dump_raw_docs();
   set_state(TigerState::Ready);
   return true;
 }

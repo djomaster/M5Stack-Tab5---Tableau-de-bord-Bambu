@@ -50,12 +50,16 @@ WifiState wifi_state() {
   return g_state;
 }
 
+// SSID et adresse sont lus une seule fois à la connexion : sur le P4 le WiFi est un coprocesseur (ESP32-C6) et chaque lecture
+// peut passer par un échange SDIO ; l'interface les demandait chaque seconde.
+static String g_ssid_cache, g_ip_cache;
+
 String wifi_ip() {
-  return WiFi.status() == WL_CONNECTED ? WiFi.localIP().toString() : String("");
+  return g_state == WifiState::Connected ? g_ip_cache : String("");
 }
 
 String wifi_current_ssid() {
-  return WiFi.status() == WL_CONNECTED ? WiFi.SSID() : String("");
+  return g_state == WifiState::Connected ? g_ssid_cache : String("");
 }
 
 void wifi_connect(const String &ssid, const String &pass) {
@@ -81,8 +85,10 @@ void wifi_update() {
   if (g_state == WifiState::Connecting) {
     wl_status_t st = WiFi.status();
     if (st == WL_CONNECTED) {
+      g_ssid_cache = WiFi.SSID();
+      g_ip_cache = WiFi.localIP().toString();
       g_state = WifiState::Connected;
-      Serial.printf("WiFi : connecte, adresse %s\n", WiFi.localIP().toString().c_str());
+      Serial.printf("WiFi : connecte, adresse %s\n", g_ip_cache.c_str());
       if (g_pending_save) {
         g_prefs.begin("wifi", false);
         g_prefs.putString("ssid", g_pending_ssid);
