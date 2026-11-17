@@ -1,6 +1,8 @@
 #include "tiger.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include <esp_heap_caps.h>
+#include <WiFi.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
@@ -66,6 +68,18 @@ static int http_json(const String &url, bool post, const String &body, const cha
     code = http.POST(body);
   } else {
     code = http.GET();
+  }
+  if (code <= 0) {
+    // Diagnostic : distingue DNS, connexion TCP et poignée de main TLS
+    char tls[96] = "";
+    int tls_err = client.lastError(tls, sizeof(tls));
+    String host = url.substring(url.indexOf("//") + 2);
+    host = host.substring(0, host.indexOf('/'));
+    IPAddress ip;
+    int dns = WiFi.hostByName(host.c_str(), ip);
+    Serial.printf("Tiger : echec HTTP %d (%s) | WiFi %d | DNS %s -> %s | TLS %d %s | interne libre %u, bloc max %u\n", code,
+                  http.errorToString(code).c_str(), (int)WiFi.status(), host.c_str(), dns == 1 ? ip.toString().c_str() : "ECHEC", tls_err, tls,
+                  (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL), (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
   }
   if (code > 0) {
     DeserializationError e = deserializeJson(out, http.getStream(), DeserializationOption::Filter(filter));

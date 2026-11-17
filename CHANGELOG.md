@@ -6,6 +6,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 
 ## [Non publié]
 
+### Modifié
+- Tiger Studio : en cas d'échec réseau, la console série détaille la cause (WiFi, DNS, TLS, mémoire).
+
 ## [0.5.0] - 2026-11-17 (à valider sur l'appareil, voir T5 dans `docs/TESTS.md`)
 
 ### Ajouté
