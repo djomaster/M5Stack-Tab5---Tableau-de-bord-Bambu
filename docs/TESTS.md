@@ -66,9 +66,9 @@ Informations de l'appareil à compléter au premier test :
 | T4-03 | Vue détaillée | Toucher d'une tuile ouvre le détail ; retour à l'accueil | Réussi | |
 | T4-04 | Valeurs du détail | Progression, fichier, couche, temps, températures cohérents avec l'imprimante | Réussi | |
 | T4-05 | Bobines AMS (H2C) | Couleurs, matières et pourcentages cohérents, bobine active en surbrillance | Réussi | H2C |
-| T4-06 | Bobines AMS (X1C) | Idem | À faire | X1C sans AMS : la bobine externe n'était pas détectée (corrigé, à retester) |
+| T4-06 | Bobines AMS (X1C) | Idem | Réussi | Bobine externe détectée ; AMS HT de la H2C à une bobine |
 | T4-07 | Sons d'essai | Les deux boutons de test émettent un son distinct | Réussi | |
-| T4-08 | Volume et activation | Le volume change ; désactivé = aucun son ; réglage conservé après redémarrage | À faire | Volume OK ; « désactiver » laissait les sons de test (corrigé, à retester) |
+| T4-08 | Volume et activation | Le volume change ; désactivé = aucun son ; réglage conservé après redémarrage | Réussi | Désactivation = silence complet |
 | T4-09 | Son de fin d'impression | Mélodie quand une impression se termine | À faire | |
 | T4-10 | Son d'erreur | Alarme quand une erreur ou un échec apparaît | À faire | |
 | T4-11 | Pas de fausse alerte | Aucun son au démarrage du Tab5 ni à la reconnexion | Réussi | |
