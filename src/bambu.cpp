@@ -109,6 +109,9 @@ struct Conn {
         int ui = 0;
         for (JsonObject u : units) {
           if (ui >= 4) break;
+          int uidn = atoi(u["id"] | "");
+          st.unit_id[ui] = uidn;
+          st.unit_ht[ui] = uidn >= 128;
           for (JsonObject t : u["tray"].as<JsonArray>()) {
             const char *ids = t["id"] | "";
             int id = atoi(ids);

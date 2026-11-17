@@ -15,7 +15,7 @@ static String d_ams_sig;
 
 static void ev_detail_back(lv_event_t *e) { ev_go_home(e); }
 
-static void tray_card(lv_obj_t *parent, const Tray &T, bool active, int x, int y) {
+static void tray_card(lv_obj_t *parent, const Tray &T, bool active, int x, int y, bool show_pct) {
   lv_obj_t *c = mk_card(parent, 150, 84, active ? C_ACC : C_LINE2);
   lv_obj_set_pos(c, x, y);
   if (T.present) {
@@ -27,8 +27,11 @@ static void tray_card(lv_obj_t *parent, const Tray &T, bool active, int x, int y
     lv_obj_set_style_border_color(sw, col(C_LINE2), 0);
     lv_obj_set_pos(sw, 12, 10);
     lv_obj_set_pos(mk_label(c, T.type.c_str(), FB16, C_TEXT), 56, 14);
-    String r = T.remain >= 0 ? String(T.remain) + " %" : String("-");
-    lv_obj_set_pos(mk_label(c, r.c_str(), F16, C_MUTED), 12, 52);
+    // Pas de pourcentage pour une bobine externe, ni quand l'imprimante ne le connaît pas (bobine sans puce).
+    if (show_pct && T.remain >= 0) {
+      String r = String(T.remain) + " %";
+      lv_obj_set_pos(mk_label(c, r.c_str(), F16, C_MUTED), 12, 52);
+    }
   } else {
     lv_obj_set_pos(mk_label(c, "Vide", F16, C_MUTED), 12, 28);
   }
@@ -38,18 +41,23 @@ static void rebuild_ams(const PrinterState &s) {
   lv_obj_clean(d_ams);
   lv_obj_set_pos(mk_label(d_ams, "Filaments", FB20, C_TEXT), 24, 18);
   int units = 0;
-  for (int i = 0; i < MAX_TRAYS; i++)
-    if (s.trays[i].present) units = i / 4 + 1;
+  for (int u = 0; u < 4; u++)
+    if (s.unit_id[u] >= 0) units = u + 1;
   for (int u = 0; u < units; u++) {
-    String t = "AMS " + String(u + 1);
+    bool ht = s.unit_ht[u];
+    String t = "AMS " + String(u + 1) + (ht ? " HT" : "");
     lv_obj_set_pos(mk_label(d_ams, t.c_str(), F16, C_MUTED), 24, 62 + u * 112);
-    for (int k = 0; k < 4; k++) tray_card(d_ams, s.trays[u * 4 + k], s.tray_now == u * 4 + k, 24 + k * 164, 86 + u * 112);
+    int slots = ht ? 1 : 4;  // un AMS HT n'a qu'une bobine
+    for (int k = 0; k < slots; k++) {
+      bool active = ht ? (s.tray_now == s.unit_id[u]) : (s.tray_now == u * 4 + k);
+      tray_card(d_ams, s.trays[u * 4 + k], active, 24 + k * 164, 86 + u * 112, true);
+    }
   }
   // Bobine(s) externe(s)
   int y = 62 + units * 112;
   lv_obj_set_pos(mk_label(d_ams, "Bobine externe", F16, C_MUTED), 24, y);
   int n_ext = s.ext[1].present ? 2 : 1;
-  for (int k = 0; k < n_ext; k++) tray_card(d_ams, s.ext[k], s.tray_now == 254 && k == 0, 24 + k * 164, y + 24);
+  for (int k = 0; k < n_ext; k++) tray_card(d_ams, s.ext[k], s.tray_now == 254 && k == 0, 24 + k * 164, y + 24, false);
   if (units == 0 && !s.ext[0].present && !s.ext[1].present)
     lv_obj_set_pos(mk_label(d_ams, "Aucun AMS détecté.", F16, C_MUTED), 24, y + 122);
 }
@@ -89,6 +97,7 @@ static void detail_tick(lv_timer_t *) {
   }
   // Les bobines ne sont redessinées que si elles ont changé.
   String sig = String(s.tray_now) + ":";
+  for (int u = 0; u < 4; u++) sig += String(s.unit_id[u]) + (s.unit_ht[u] ? "H" : "N");
   for (int i = 0; i < MAX_TRAYS; i++)
     sig += String(s.trays[i].present) + s.trays[i].type + String(s.trays[i].color, HEX) + String(s.trays[i].remain) + ";";
   for (int k = 0; k < 2; k++)

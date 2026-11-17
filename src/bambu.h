@@ -29,6 +29,8 @@ struct PrinterState {
   float bed = 0;
   int tray_now = -1;  // bobine active : unité*4 + bobine ; 254 = bobine externe ; -1 = inconnu
   Tray trays[MAX_TRAYS];
+  int unit_id[4] = {-1, -1, -1, -1};     // identifiant de chaque unité AMS ; -1 = absente
+  bool unit_ht[4] = {false, false, false, false};  // AMS HT (une seule bobine, identifiant 128 ou plus)
   Tray ext[2];  // bobines externes (hors AMS) : 1 sur X1C, jusqu'à 2 sur la série H2
 };
 

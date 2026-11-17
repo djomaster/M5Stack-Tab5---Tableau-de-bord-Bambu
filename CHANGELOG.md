@@ -20,6 +20,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 - Bobine externe (hors AMS) non détectée sur la X1C : lecture de `vt_tray` (et `vir_slot` pour la série H2), affichage dans « Bobine externe ».
 - Sons désactivés : les essais et le volume émettaient encore un son ; silence complet désormais, avec un message sur l'écran Alertes.
 
+- AMS HT (H2C) : reconnu par son identifiant (128 ou plus), affiché avec une seule bobine et libellé « AMS 3 HT » au lieu de quatre emplacements.
+- Bobine externe : plus de pourcentage (l'imprimante ne le connaît pas, le poids ne peut pas être estimé). Le pourcentage est aussi masqué pour une bobine sans puce.
+
 ### Limites connues
 - Les codes d'erreur restent affichés bruts.
 - Lecture de l'AMS écrite d'après le format des rapports Bambu ; à confirmer sur la H2C (AMS 2 Pro / HT) et la X1C.
