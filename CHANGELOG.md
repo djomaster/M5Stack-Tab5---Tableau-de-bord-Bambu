@@ -19,6 +19,9 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ### Supprimé
 - `src/config.h` et `src/config.example.h` : le WiFi ne se configure plus par fichier (D-012).
 
+### Corrigé
+- Échec de l'édition de liens (« can't link soft-float modules with single-float modules ») : les fichiers assembleur ARM de LVGL (Helium, Neon) sont exclus par `tools/skip_lvgl_asm.py` et l'accélération assembleur est désactivée. La compilation elle-même avait réussi (T2-01 : compilation OK, liens en cours de correction).
+
 ### Limites connues
 - Les écrans Imprimantes, Alertes et Affichage affichent seulement « Disponible dans une prochaine version ». Aucune connexion aux imprimantes pour l'instant.
 - Code écrit sans pouvoir être compilé dans l'environnement de développement : la première compilation est à faire par l'utilisateur.
