@@ -1,6 +1,7 @@
 #include "tiger.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include "tls_gate.h"
 #include <esp_heap_caps.h>
 #include <WiFi.h>
 #include <Preferences.h>
@@ -53,8 +54,25 @@ static void set_state(TigerState s, const String &msg = "") {
 }
 
 // ---------------------------------------------------------------------
+static int http_json_locked(const String &url, bool post, const String &body, const char *content_type, const char *bearer,
+                            JsonDocument &filter, JsonDocument &out);
+
 static int http_json(const String &url, bool post, const String &body, const char *content_type, const char *bearer,
                      JsonDocument &filter, JsonDocument &out) {
+  if (xSemaphoreTake(tls_gate(), pdMS_TO_TICKS(30000)) != pdTRUE) return -2;
+  if (!tls_memory_ok()) {
+    Serial.printf("Tiger : memoire interne insuffisante pour TLS (bloc max %u)\n",
+                  (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
+    xSemaphoreGive(tls_gate());
+    return -3;
+  }
+  int code = http_json_locked(url, post, body, content_type, bearer, filter, out);
+  xSemaphoreGive(tls_gate());
+  return code;
+}
+
+static int http_json_locked(const String &url, bool post, const String &body, const char *content_type, const char *bearer,
+                            JsonDocument &filter, JsonDocument &out) {
   WiFiClientSecure client;
   client.setInsecure();  // réseau de confiance ; pas de magasin de certificats embarqué
   HTTPClient http;
@@ -337,7 +355,7 @@ static bool g_task_started = false;
 static void ensure_task() {
   if (g_task_started) return;
   g_task_started = true;
-  xTaskCreatePinnedToCore(tiger_task, "tiger_net", 24576, nullptr, 1, nullptr, 0);
+  xTaskCreatePinnedToCore(tiger_task, "tiger_net", 16384, nullptr, 1, nullptr, 0);
 }
 
 void tiger_begin() {
