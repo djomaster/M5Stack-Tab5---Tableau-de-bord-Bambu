@@ -55,6 +55,14 @@ static void set_state(TigerState s, const String &msg = "") {
 }
 
 // ---------------------------------------------------------------------
+// Allocateur ArduinoJson en PSRAM : les gros documents JSON ne consomment pas la mémoire interne
+struct PsramAlloc : ArduinoJson::Allocator {
+  void *allocate(size_t n) override { return heap_caps_malloc(n, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT); }
+  void deallocate(void *p) override { heap_caps_free(p); }
+  void *reallocate(void *p, size_t n) override { return heap_caps_realloc(p, n, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT); }
+};
+static PsramAlloc g_psram;
+
 static int http_json_locked(const String &url, bool post, const String &body, const char *content_type, const char *bearer,
                             JsonDocument &filter, JsonDocument &out);
 
@@ -102,10 +110,42 @@ static int http_json_locked(const String &url, bool post, const String &body, co
                   (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL), (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
   }
   if (code > 0) {
-    // Corps lu en entier (en mémoire externe) avant l'analyse : la lecture directe du flux était tronquée (IncompleteInput)
-    String payload = http.getString();
-    DeserializationError e = deserializeJson(out, payload, DeserializationOption::Filter(filter));
-    if (e) Serial.printf("Tiger : JSON illisible (%s) pour %s\n", e.c_str(), url.substring(0, 60).c_str());
+    // Corps lu en entier, en PSRAM, avant l'analyse : la lecture directe du flux était tronquée (IncompleteInput)
+    uint32_t t0 = millis();
+    int len = http.getSize();
+    size_t cap = len > 0 ? (size_t)len + 1 : 65536;
+    char *buf = (char *)heap_caps_malloc(cap, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    size_t n = 0;
+    if (buf) {
+      WiFiClient *st = http.getStreamPtr();
+      uint32_t last = millis();
+      while (http.connected() && !(len > 0 && n >= (size_t)len)) {
+        int av = st->available();
+        if (av > 0) {
+          if (n + av + 1 > cap) {
+            size_t ncap = cap * 2 + av;
+            char *nb = (char *)heap_caps_realloc(buf, ncap, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+            if (!nb) break;
+            buf = nb;
+            cap = ncap;
+          }
+          int r = st->readBytes(buf + n, av);
+          if (r > 0) n += r;
+          last = millis();
+        } else {
+          if (millis() - last > 15000) break;
+          vTaskDelay(pdMS_TO_TICKS(5));
+        }
+      }
+      buf[n] = 0;
+      DeserializationError e = deserializeJson(out, buf, n, DeserializationOption::Filter(filter));
+      if (e) Serial.printf("Tiger : JSON illisible (%s) pour %s\n", e.c_str(), url.substring(0, 60).c_str());
+      heap_caps_free(buf);
+    } else {
+      Serial.println("Tiger : tampon PSRAM non alloue");
+    }
+    Serial.printf("Tiger : %s -> HTTP %d, %u octets, %u ms | interne libre %u\n", url.substring(8, 40).c_str(), code, (unsigned)n,
+                  (unsigned)(millis() - t0), (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
   }
   http.end();
   return code;
@@ -169,7 +209,7 @@ static bool do_login(const String &email, const String &pass) {
   body["returnSecureToken"] = true;
   String b;
   serializeJson(body, b);
-  JsonDocument out;
+  JsonDocument out(&g_psram);
   String url = String("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=") + FB_KEY;
   int code = http_json(url, true, b, "application/json", nullptr, filter, out);
   b = "";
@@ -199,7 +239,7 @@ static bool ensure_token() {
   filter["user_id"] = true;
   filter["expires_in"] = true;
   filter["error"]["message"] = true;
-  JsonDocument out;
+  JsonDocument out(&g_psram);
   String url = String("https://securetoken.googleapis.com/v1/token?key=") + FB_KEY;
   String body = "grant_type=refresh_token&refresh_token=" + url_encode(g_refresh);
   int code = http_json(url, true, body, "application/x-www-form-urlencoded", nullptr, filter, out);
@@ -228,7 +268,7 @@ static void load_table(const char *url, std::map<int, String> &dst) {
   filter[0]["id"] = true;
   filter[0]["name"] = true;
   filter[0]["label"] = true;
-  JsonDocument out;
+  JsonDocument out(&g_psram);
   int code = http_json(url, false, "", nullptr, nullptr, filter, out);
   if (code != 200) {
     Serial.printf("Tiger : table de reference indisponible (HTTP %d)\n", code);
@@ -279,7 +319,7 @@ static bool do_sync() {
                           "weight_available", "capacity", "deleted"})
       url += String("&mask.fieldPaths=") + k;
     if (page_token.length()) url += "&pageToken=" + url_encode(page_token);
-    JsonDocument out;
+    JsonDocument out(&g_psram);
     int code = http_json(url, false, "", nullptr, g_id_token.c_str(), filter, out);
     if (code != 200) {
       String err = out["error"]["message"] | "";
@@ -325,7 +365,7 @@ struct PrinterPause {
   bool active = false;
   PrinterPause() {
     size_t blk = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL);
-    if (blk < 80000) {
+    if (blk < 140000) {
       Serial.printf("Tiger : pause des imprimantes (bloc interne max %u)\n", (unsigned)blk);
       bambu_pause(true);
       active = true;
