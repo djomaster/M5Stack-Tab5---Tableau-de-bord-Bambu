@@ -75,6 +75,7 @@ static int http_json(const String &url, bool post, const String &body, const cha
 static int http_json_locked(const String &url, bool post, const String &body, const char *content_type, const char *bearer,
                             JsonDocument &filter, JsonDocument &out) {
   WiFiClientSecure client;
+  client.setHandshakeTimeout(15);  // secondes (120 par défaut)
   client.setInsecure();  // réseau de confiance ; pas de magasin de certificats embarqué
   HTTPClient http;
   http.useHTTP10(true);  // évite le codage « chunked », que le flux JSON ne gère pas
@@ -335,9 +336,11 @@ static void tiger_task(void *) {
       g_req_login = false;
       String e = g_req_email, p = g_req_pass;
       g_req_pass = "";
+      Serial.println("Tiger : pause des connexions imprimantes (connexion)");
       bambu_pause(true);  // les sessions TLS des imprimantes occupent la mémoire interne dont Tiger Studio a besoin
       bool ok = do_login(e, p);
       bambu_pause(false);
+      Serial.printf("Tiger : reprise des imprimantes (connexion %s)\n", ok ? "reussie" : "echouee");
       if (ok) g_req_sync = true;
     } else if (g_req_login && !online) {
       g_req_login = false;
@@ -349,9 +352,11 @@ static void tiger_task(void *) {
       bool due = g_last_sync == 0 ? now >= g_next_try : (now - g_last_sync > SYNC_PERIOD_MS);
       if (g_req_sync || (due && now >= g_next_try)) {
         g_req_sync = false;
+        Serial.println("Tiger : pause des connexions imprimantes (synchro)");
         bambu_pause(true);
         bool ok = do_sync();
         bambu_pause(false);
+        Serial.printf("Tiger : reprise des imprimantes (synchro %s)\n", ok ? "reussie" : "echouee");
         if (!ok) g_next_try = millis() + RETRY_PERIOD_MS;
       }
     }

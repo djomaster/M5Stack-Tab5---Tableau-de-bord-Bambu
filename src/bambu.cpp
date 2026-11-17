@@ -42,6 +42,7 @@ struct Conn {
     cfg.serial.toUpperCase();
     cfg.ip.trim();
     net.setInsecure();
+    net.setHandshakeTimeout(8);  // secondes (120 par défaut : bloquerait la tâche réseau)
     net.setTimeout(6);
     mqtt.setServer(cfg.ip.c_str(), 8883);
     mqtt.setSocketTimeout(3);  // PubSubClient attend le CONNACK en boucle active : moins que le watchdog (5 s)
