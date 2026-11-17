@@ -5,6 +5,7 @@
 #include "fonts.h"
 #include "printers.h"
 #include "tiger.h"
+#include "diag.h"
 #include "ui_common.h"
 
 // =====================================================================
@@ -55,11 +56,11 @@ static void tray_card(lv_obj_t *parent, const Tray &T, bool active, int x, int y
       bool approx;
       int g = inventory_grams(T, approx);
       if (g >= 0) {
-        String gs = String(approx ? "~" : "") + String(g) + " g";
+        String gs = String(approx ? "env. " : "") + String(g) + " g";
         lv_obj_t *gl = mk_label(c, gs.c_str(), F16, approx ? C_MUTED : C_ACC_T);
-        lv_obj_set_width(gl, 84);
+        lv_obj_set_width(gl, 100);
         lv_obj_set_style_text_align(gl, LV_TEXT_ALIGN_RIGHT, 0);
-        lv_obj_set_pos(gl, 50, 52);
+        lv_obj_set_pos(gl, 38, 52);
       }
     }
   } else {
@@ -68,6 +69,7 @@ static void tray_card(lv_obj_t *parent, const Tray &T, bool active, int x, int y
 }
 
 static void rebuild_ams(const PrinterState &s) {
+  diag_mark("ui:rebuild_ams");
   lv_obj_clean(d_ams);
   lv_obj_set_pos(mk_label(d_ams, "Filaments", FB20, C_TEXT), 24, 18);
   int units = 0;

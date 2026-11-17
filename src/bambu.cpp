@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include "tls_gate.h"
+#include "diag.h"
 #include <esp_task_wdt.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
@@ -61,6 +62,7 @@ struct Conn {
 
   // Coupe la session pour libérer la mémoire (reprise automatique ensuite)
   void drop() {
+    diag_mark("mqtt:coupure");
     if (mqtt.connected()) mqtt.disconnect();
     net.stop();
     set_link(Link::Connecting);
@@ -73,6 +75,7 @@ struct Conn {
   }
 
   void on_message(uint8_t *payload, unsigned int len) {
+    diag_mark("mqtt:message");
     JsonDocument doc;
     DeserializationError err = deserializeJson(doc, payload, len, DeserializationOption::Filter(g_filter));
     if (err) {
@@ -182,6 +185,7 @@ struct Conn {
     bool ok = false;
     if (xSemaphoreTake(tls_gate(), pdMS_TO_TICKS(20000)) == pdTRUE) {
       uint32_t t0 = millis();
+      diag_mark("mqtt:connexion");
       ok = mqtt.connect(cid.c_str(), "bblp", cfg.code.c_str());
       xSemaphoreGive(tls_gate());
       Serial.printf("MQTT : connexion vers %s en %u ms (ok=%d)\n", cfg.ip.c_str(), (unsigned)(millis() - t0), ok);

@@ -2,6 +2,7 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 #include "tls_gate.h"
+#include "diag.h"
 #include "bambu.h"
 #include <esp_heap_caps.h>
 #include <WiFi.h>
@@ -414,7 +415,9 @@ static void tiger_task(void *) {
         bool ok;
         {
           PrinterPause pp;
+          diag_mark("tiger:synchro");
           ok = do_sync();
+          diag_mark("tiger:synchro-fin");
         }
         if (!ok) g_next_try = millis() + RETRY_PERIOD_MS;
       }

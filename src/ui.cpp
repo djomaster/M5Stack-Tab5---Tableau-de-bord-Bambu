@@ -1,3 +1,4 @@
+#include "diag.h"
 #include "ui.h"
 #include <M5Unified.h>
 #include <lvgl.h>
@@ -84,6 +85,7 @@ static void home_rebuild() {
 }
 
 static void home_update() {
+  diag_mark("ui:home_update");
   if (printers_revision() != built_rev) home_rebuild();
   for (int i = 0; i < built_count; i++) {
     PrinterState s;

@@ -7,6 +7,8 @@ Règle : toute modification du code ou de la configuration ajoute une ligne dans
 ## [Non publié]
 
 ### Modifié
+- Poids de l'inventaire estimés par couleur : préfixe « env. » au lieu de « ~ » (le tilde ressemblait à un signe moins).
+- Diagnostic : cause du dernier redémarrage au démarrage, mémoire après chaque étape d'initialisation, et ligne « Mem CHUTE » avec les dernières étapes quand la mémoire interne chute de plus de 12 Ko en 200 ms.
 - Clavier : bouton « Réduire » (en bas à droite) qui masque le clavier ; toucher de nouveau un champ de saisie le ré-affiche.
 - Clavier tactile pleine largeur en bas de l'écran (touches 110 x 68 px au lieu de 66 x 60). WiFi : deux modes (liste des réseaux, puis mot de passe avec clavier). Assistant imprimante et Tiger Studio : champs en haut, clavier en bas.
 - Tiger Studio : le second identifiant RFID se lit dans le champ `twin_uid` (nom confirmé par la documentation d'intégration de TigerTag ; la clé Firebase, le projet et le chemin de l'inventaire étaient déjà conformes).

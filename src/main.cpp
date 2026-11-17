@@ -7,7 +7,9 @@
 #include "alerts.h"
 #include "bambu.h"
 #include "display_port.h"
+#include "diag.h"
 #include "fonts.h"
+#include <esp_system.h>
 #include "printers.h"
 #include "tiger.h"
 #include "ui.h"
@@ -25,6 +27,7 @@ void setup() {
   M5.begin(cfg);
   Serial.begin(115200);
   Serial.printf("%s v%s\n", FW_NAME, FW_VERSION);
+  Serial.printf("Demarrage : cause %d (1 mise sous tension, 3 logiciel, 4 panne, 5 interruption watchdog, 6 watchdog tache, 7 watchdog)\n", (int)esp_reset_reason());
 
   printers_load();
   alerts_load();
@@ -36,13 +39,16 @@ void setup() {
   // (centaines de boutons du clavier, étiquettes, styles) ne mangent plus la mémoire interne, réservée au WiFi et à TLS.
   heap_caps_malloc_extmem_enable(256);
   display_port_init();
+  log_memory("apres ecran");
   fonts_init();
+  log_memory("apres polices");
   ui_init();
   heap_caps_malloc_extmem_enable(16384);  // retour au réglage normal (seuil de 16 Ko)
   log_memory("demarrage");
 }
 
 void loop() {
+  diag_loop();
   static uint32_t last_mem = 0;
   if (millis() - last_mem > 10000) {
     last_mem = millis();
